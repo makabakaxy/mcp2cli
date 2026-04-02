@@ -1,0 +1,115 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="94">
+            <item index="0" class="java.lang.String" itemvalue="chromadb" />
+            <item index="1" class="java.lang.String" itemvalue="tiktoken" />
+            <item index="2" class="java.lang.String" itemvalue="bs4" />
+            <item index="3" class="java.lang.String" itemvalue="async-timeout" />
+            <item index="4" class="java.lang.String" itemvalue="scikit-learn" />
+            <item index="5" class="java.lang.String" itemvalue="h2" />
+            <item index="6" class="java.lang.String" itemvalue="jsonref" />
+            <item index="7" class="java.lang.String" itemvalue="atlassian-python-api" />
+            <item index="8" class="java.lang.String" itemvalue="httptools" />
+            <item index="9" class="java.lang.String" itemvalue="exceptiongroup" />
+            <item index="10" class="java.lang.String" itemvalue="google-generativeai" />
+            <item index="11" class="java.lang.String" itemvalue="qdrant-client" />
+            <item index="12" class="java.lang.String" itemvalue="pandoc" />
+            <item index="13" class="java.lang.String" itemvalue="pymysql" />
+            <item index="14" class="java.lang.String" itemvalue="langchain" />
+            <item index="15" class="java.lang.String" itemvalue="anthropic" />
+            <item index="16" class="java.lang.String" itemvalue="grpcio-status" />
+            <item index="17" class="java.lang.String" itemvalue="cohere" />
+            <item index="18" class="java.lang.String" itemvalue="pyarrow" />
+            <item index="19" class="java.lang.String" itemvalue="weaviate-client" />
+            <item index="20" class="java.lang.String" itemvalue="pydantic-settings" />
+            <item index="21" class="java.lang.String" itemvalue="watchfiles" />
+            <item index="22" class="java.lang.String" itemvalue="python-docx" />
+            <item index="23" class="java.lang.String" itemvalue="jaraco.collections" />
+            <item index="24" class="java.lang.String" itemvalue="asyncpg" />
+            <item index="25" class="java.lang.String" itemvalue="faiss-cpu" />
+            <item index="26" class="java.lang.String" itemvalue="pytest" />
+            <item index="27" class="java.lang.String" itemvalue="voyageai" />
+            <item index="28" class="java.lang.String" itemvalue="markitdown" />
+            <item index="29" class="java.lang.String" itemvalue="ollama" />
+            <item index="30" class="java.lang.String" itemvalue="pipreqs" />
+            <item index="31" class="java.lang.String" itemvalue="backports.tarfile" />
+            <item index="32" class="java.lang.String" itemvalue="pdfminer.six" />
+            <item index="33" class="java.lang.String" itemvalue="instructor" />
+            <item index="34" class="java.lang.String" itemvalue="platformdirs" />
+            <item index="35" class="java.lang.String" itemvalue="pdf2image" />
+            <item index="36" class="java.lang.String" itemvalue="pypdf2" />
+            <item index="37" class="java.lang.String" itemvalue="vertexai" />
+            <item index="38" class="java.lang.String" itemvalue="pinecone" />
+            <item index="39" class="java.lang.String" itemvalue="pypandoc" />
+            <item index="40" class="java.lang.String" itemvalue="returns" />
+            <item index="41" class="java.lang.String" itemvalue="pip-check-reqs" />
+            <item index="42" class="java.lang.String" itemvalue="pymilvus" />
+            <item index="43" class="java.lang.String" itemvalue="python-multipart" />
+            <item index="44" class="java.lang.String" itemvalue="threadpoolctl" />
+            <item index="45" class="java.lang.String" itemvalue="huggingface-hub" />
+            <item index="46" class="java.lang.String" itemvalue="asposestorage" />
+            <item index="47" class="java.lang.String" itemvalue="webdriver-manager" />
+            <item index="48" class="java.lang.String" itemvalue="numpy" />
+            <item index="49" class="java.lang.String" itemvalue="requests" />
+            <item index="50" class="java.lang.String" itemvalue="uuid" />
+            <item index="51" class="java.lang.String" itemvalue="feedparser" />
+            <item index="52" class="java.lang.String" itemvalue="docx2txt" />
+            <item index="53" class="java.lang.String" itemvalue="selenium" />
+            <item index="54" class="java.lang.String" itemvalue="playwright" />
+            <item index="55" class="java.lang.String" itemvalue="tenacity" />
+            <item index="56" class="java.lang.String" itemvalue="google-auth-httplib2" />
+            <item index="57" class="java.lang.String" itemvalue="apscheduler" />
+            <item index="58" class="java.lang.String" itemvalue="uvicorn" />
+            <item index="59" class="java.lang.String" itemvalue="PyPDF2" />
+            <item index="60" class="java.lang.String" itemvalue="PyMuPDF" />
+            <item index="61" class="java.lang.String" itemvalue="pydantic" />
+            <item index="62" class="java.lang.String" itemvalue="google-auth-oauthlib" />
+            <item index="63" class="java.lang.String" itemvalue="aiofiles" />
+            <item index="64" class="java.lang.String" itemvalue="loguru" />
+            <item index="65" class="java.lang.String" itemvalue="python-pptx" />
+            <item index="66" class="java.lang.String" itemvalue="sqlalchemy" />
+            <item index="67" class="java.lang.String" itemvalue="chardet" />
+            <item index="68" class="java.lang.String" itemvalue="openai" />
+            <item index="69" class="java.lang.String" itemvalue="schedule" />
+            <item index="70" class="java.lang.String" itemvalue="fastapi" />
+            <item index="71" class="java.lang.String" itemvalue="asyncio" />
+            <item index="72" class="java.lang.String" itemvalue="aiohttp" />
+            <item index="73" class="java.lang.String" itemvalue="grpcio" />
+            <item index="74" class="java.lang.String" itemvalue="qdrant_client" />
+            <item index="75" class="java.lang.String" itemvalue="google-api-python-client" />
+            <item index="76" class="java.lang.String" itemvalue="PyMySQL" />
+            <item index="77" class="java.lang.String" itemvalue="diskcache" />
+            <item index="78" class="java.lang.String" itemvalue="openpyxl" />
+            <item index="79" class="java.lang.String" itemvalue="oauth2client" />
+            <item index="80" class="java.lang.String" itemvalue="werkzeug" />
+            <item index="81" class="java.lang.String" itemvalue="Flask-Cors" />
+            <item index="82" class="java.lang.String" itemvalue="grafanalib" />
+            <item index="83" class="java.lang.String" itemvalue="gspread" />
+            <item index="84" class="java.lang.String" itemvalue="Flask-BasicAuth" />
+            <item index="85" class="java.lang.String" itemvalue="urllib3" />
+            <item index="86" class="java.lang.String" itemvalue="prometheus_client" />
+            <item index="87" class="java.lang.String" itemvalue="grafana-api" />
+            <item index="88" class="java.lang.String" itemvalue="Flask" />
+            <item index="89" class="java.lang.String" itemvalue="Pillow" />
+            <item index="90" class="java.lang.String" itemvalue="sccclient" />
+            <item index="91" class="java.lang.String" itemvalue="orjson" />
+            <item index="92" class="java.lang.String" itemvalue="grpcio-health-checking" />
+            <item index="93" class="java.lang.String" itemvalue="grpcio-tools" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyShadowingBuiltinsInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredNames">
+        <list>
+          <option value="bytes" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
