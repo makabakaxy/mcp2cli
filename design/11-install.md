@@ -4,15 +4,24 @@
 
 ## 一、功能概述
 
-本章涉及两个命令：
+本章涉及三个命令：
 
-- **`mcp2cli add`**：安装 MCP server 到物理机上
-- **`mcp2cli install`**：一键全流程，内部调用 `add`，再通过 Step Pipeline 依次执行 scan → generate cli → generate skill
+- **`mcp2cli mcp install`**：安装 MCP server（AI 搜索配置 → 交互补全 → 写入 `~/.agents/mcp2cli/servers.yaml`）
+- **`mcp2cli skill sync`**：将已生成的 skill 文件软链接到 Claude、Cursor、Codex 的 skill 目录，使 agent 能够发现并加载它
+- **`mcp2cli install`**：一键全流程，内部依次执行 `mcp install` → scan → generate cli → generate skill → `skill sync`
 
-### mcp2cli add 流程
+**命令职责分工：**
+
+| 命令 | 职责 |
+|------|------|
+| `mcp2cli mcp install` | 安装 MCP server package，写入 `~/.agents/mcp2cli/servers.yaml` |
+| `mcp2cli skill sync` | 将 skill 软链接到各 AI 客户端目录，agent 就能用 |
+| `mcp2cli install` | 完整流程：mcp install → scan → generate cli → generate skill → skill sync |
+
+### mcp2cli mcp install 流程
 
 ```
-mcp2cli add mcp-atlassian
+mcp2cli mcp install mcp-atlassian
         │
         ▼
 ┌─ 1. AI 搜索安装信息 ────────────────────┐
@@ -38,14 +47,52 @@ mcp2cli add mcp-atlassian
 │  node → 检查路径/提示用户手动安装        │
 │                                        │
 │  失败处理：打印警告，继续写入配置         │
-│  （AI 客户端首次启动时会自动安装）        │
+│  （daemon 启动时会自动安装）             │
 └───────────────────┬─────────────────────┘
                     │
                     ▼
-┌─ 4. 写入三个配置文件 ──────────────────┐
-│  ~/.claude.json         ✓ 写入         │
-│  ~/.cursor/mcp.json     ✓ 写入         │
-│  ~/.codex/config.toml   ⊘ 已存在,跳过   │
+┌─ 4. 写入 servers.yaml ─────────────────┐
+│  ~/.agents/mcp2cli/servers.yaml        │
+│                                        │
+│  servers:                              │
+│    mcp-atlassian:        ✓ 写入        │
+│      command: uvx                      │
+│      args: [mcp-atlassian]             │
+│      env:                              │
+│        JIRA_URL: https://...           │
+│        JIRA_API_TOKEN: ...             │
+└────────────────────────────────────────┘
+```
+
+### mcp2cli skill sync 流程
+
+```
+mcp2cli skill sync mcp-atlassian
+        │
+        ▼
+┌─ 1. 检查 skill 文件是否已生成 ──────────┐
+│  ~/.agents/mcp2cli/skills/mcp-atlassian/│
+│  ├── SKILL.md   ✓ 存在                 │
+│  ├── reference/ ✓ 存在                 │
+│  └── examples/  ✓ 存在                 │
+└───────────────────┬─────────────────────┘
+                    │
+                    ▼
+┌─ 2. 创建/更新软链接 ────────────────────┐
+│  Claude Code:                          │
+│    ~/.claude/skills/mcp-atlassian      │
+│      → ~/.agents/mcp2cli/skills/       │
+│         mcp-atlassian/                 │
+│                                        │
+│  Cursor:                               │
+│    ~/.cursor/skills/mcp-atlassian      │
+│      → ~/.agents/mcp2cli/skills/       │
+│         mcp-atlassian/                 │
+│                                        │
+│  Codex:                                │
+│    ~/.codex/skills/mcp-atlassian       │
+│      → ~/.agents/mcp2cli/skills/       │
+│         mcp-atlassian/                 │
 └────────────────────────────────────────┘
 ```
 
@@ -55,14 +102,15 @@ mcp2cli add mcp-atlassian
 mcp2cli install mcp-atlassian
         │
         ▼
-┌─ 阶段 A: add ───────────────────────────┐
-│  mcp2cli add mcp-atlassian              │
-│  (AI 搜索 + 交互补全 + 安装 + 写配置)    │
-└───────────────────┬─────────────────────┘
-                    │ 成功
-                    ▼
-┌─ 阶段 B: Step Pipeline ────────────────┐
+┌─ Step Pipeline ────────────────────────┐
 │                                        │
+│  Step 0: mcp install                   │
+│    mcp2cli mcp install mcp-atlassian   │
+│    (AI 搜索 + 交互补全 + 安装 +        │
+│     写 servers.yaml)                   │
+│    失败 → 警告 + 跳过后续步骤           │
+│         │ 成功                          │
+│         ▼                              │
 │  Step 1: scan                          │
 │    mcp2cli scan mcp-atlassian          │
 │    失败 → 警告 + 跳过后续步骤           │
@@ -75,6 +123,11 @@ mcp2cli install mcp-atlassian
 │         ▼                              │
 │  Step 3: generate skill                │
 │    mcp2cli generate skill mcp-atlassian│
+│    失败 → 警告 + 跳过后续步骤           │
+│         │ 成功                          │
+│         ▼                              │
+│  Step 4: skill sync                    │
+│    mcp2cli skill sync mcp-atlassian    │
 │    失败 → 警告                          │
 │                                        │
 └────────────────────────────────────────┘
@@ -82,26 +135,51 @@ mcp2cli install mcp-atlassian
 
 ## 二、命令接口
 
-### 2.1 mcp2cli add（安装并注册 MCP server）
+### 2.1 mcp2cli mcp install（安装并注册 MCP server）
 
 ```bash
-mcp2cli add <server-name> [OPTIONS]
+mcp2cli mcp install <server-name> [OPTIONS]
 
 Arguments:
   server-name          MCP server 名称（如 mcp-atlassian, playwright）
 
 Options:
-  --targets            写入哪些配置文件 (默认: claude,cursor,codex)
-                       可选值: claude, cursor, codex, all
-                       示例: --targets claude,cursor
   --env KEY=VALUE      预设 env 值，跳过交互式询问（可多次使用）
                        示例: --env JIRA_URL=https://xxx.atlassian.net
-  --skip-install       跳过 package 安装步骤，只写配置文件
+  --skip-install       跳过 package 安装步骤，只写 servers.yaml
   --dry-run            只展示将要执行的操作，不实际修改文件
   --yes                跳过确认提示，直接执行
 ```
 
-### 2.2 mcp2cli install（一键全流程）
+写入目标：`~/.agents/mcp2cli/servers.yaml`（daemon 配置文件，格式见下文）。
+
+### 2.2 mcp2cli skill sync（同步 skill 到各 AI 客户端）
+
+```bash
+mcp2cli skill sync [server-name] [OPTIONS]
+
+Arguments:
+  server-name          要同步的 server 名称（如 mcp-atlassian）
+                       省略则同步所有已生成 skill 的 server
+
+Options:
+  --targets            同步到哪些客户端 (默认: claude,cursor,codex)
+                       可选值: claude, cursor, codex, all
+  --dry-run            只展示将要创建的软链接，不实际操作
+  --force              覆盖已存在的软链接（默认跳过）
+```
+
+**各客户端 skill 目录：**
+
+| 客户端 | Skill 目录 |
+|--------|-----------|
+| Claude Code | `~/.claude/skills/<server>/` |
+| Cursor | `~/.cursor/skills/<server>/` |
+| Codex | `~/.codex/skills/<server>/` |
+
+所有软链接均指向 `~/.agents/mcp2cli/skills/<server>/`（实际存储位置）。
+
+### 2.3 mcp2cli install（一键全流程）
 
 ```bash
 mcp2cli install <server-name> [OPTIONS]
@@ -110,20 +188,36 @@ Arguments:
   server-name          MCP server 名称（如 mcp-atlassian, playwright）
 
 Options:
-  --targets            同 add，透传给 add 阶段
-  --env KEY=VALUE      同 add，透传给 add 阶段
+  --env KEY=VALUE      同 mcp install，透传给 mcp install 阶段
+  --skill-targets      skill sync 的目标客户端 (默认: claude,cursor,codex)
   --dry-run            只展示将要写入的内容，不实际修改文件（不执行 pipeline）
   --yes                跳过确认提示，直接执行
-  --skip-generate      跳过 pipeline（等价于直接使用 mcp2cli add）
+  --skip-generate      跳过 pipeline（等价于直接使用 mcp2cli mcp install）
 ```
 
-### 2.3 配置文件路径
+### 2.4 servers.yaml 格式
 
-| 目标 | 配置文件路径 | 格式 |
-|------|-------------|------|
-| Claude | `~/.claude.json` | JSON (`mcpServers` 字段) |
-| Cursor | `~/.cursor/mcp.json` | JSON (`mcpServers` 字段) |
-| Codex | `~/.codex/config.toml` | TOML (`[[mcp_servers]]` 表) |
+`mcp2cli mcp install` 的写入目标，由 daemon 启动 MCP server 时读取：
+
+```yaml
+# ~/.agents/mcp2cli/servers.yaml
+servers:
+  mcp-atlassian:
+    command: uvx
+    args: [mcp-atlassian]
+    env:
+      JIRA_URL: https://your-company.atlassian.net
+      JIRA_API_TOKEN: user_provided_token
+
+  playwright:
+    command: npx
+    args: [playwright-mcp]
+    env: {}
+```
+
+**写入逻辑：**
+- server 已存在 → 跳过，打印提示（`--force` 可覆盖）
+- server 不存在 → 追加到 `servers` 字典
 
 ## 三、AI 辅助安装（核心设计）
 
@@ -242,128 +336,18 @@ claude -p "之前的搜索结果缺少 env 配置信息，请尝试搜索 {{SERV
 
 最多重试 2 次，仍不完整则使用已获取的信息继续（env 部分可能为空），提示用户后续手动补充。
 
-## 四、配置文件写入
+## 四、写入前确认
 
-### 4.1 写入流程
-
-```
-对每个目标配置文件 (claude, cursor, codex):
-    │
-    ├── 文件不存在 → 创建文件并写入 server 定义
-    │
-    ├── 文件存在，server 已定义 → 跳过，打印提示
-    │   "⊘ ~/.claude.json: mcp-atlassian already exists, skipped"
-    │
-    └── 文件存在，server 未定义 → 追加 server 定义
-        "✓ ~/.claude.json: mcp-atlassian added"
-```
-
-### 4.2 Claude 配置写入 (`~/.claude.json`)
-
-```json
-{
-  "mcpServers": {
-    "mcp-atlassian": {
-      "command": "uvx",
-      "args": ["mcp-atlassian"],
-      "env": {
-        "JIRA_URL": "https://your-company.atlassian.net",
-        "JIRA_API_TOKEN": "user_provided_token"
-      }
-    }
-  }
-}
-```
-
-**写入逻辑：**
-
-```python
-# 伪代码
-config = json.load(claude_json_path) if exists else {}
-servers = config.setdefault("mcpServers", {})
-if server_name in servers:
-    print(f"⊘ {path}: {server_name} already exists, skipped")
-    return
-servers[server_name] = {
-    "command": command,
-    "args": args,
-    "env": env_values  # 只写入有值的 env
-}
-json.dump(config, claude_json_path, indent=2)
-print(f"✓ {path}: {server_name} added")
-```
-
-### 4.3 Cursor 配置写入 (`~/.cursor/mcp.json`)
-
-格式与 Claude 完全相同：
-
-```json
-{
-  "mcpServers": {
-    "mcp-atlassian": {
-      "command": "uvx",
-      "args": ["mcp-atlassian"],
-      "env": {
-        "JIRA_URL": "https://your-company.atlassian.net",
-        "JIRA_API_TOKEN": "user_provided_token"
-      }
-    }
-  }
-}
-```
-
-### 4.4 Codex 配置写入 (`~/.codex/config.toml`)
-
-TOML 格式不同于 JSON：
-
-```toml
-[[mcp_servers]]
-name = "mcp-atlassian"
-command = "uvx"
-args = ["mcp-atlassian"]
-
-[mcp_servers.env]
-JIRA_URL = "https://your-company.atlassian.net"
-JIRA_API_TOKEN = "user_provided_token"
-```
-
-**写入逻辑：**
-
-```python
-# 伪代码
-config = toml.load(codex_toml_path) if exists else {}
-servers = config.setdefault("mcp_servers", [])
-for s in servers:
-    if s.get("name") == server_name:
-        print(f"⊘ {path}: {server_name} already exists, skipped")
-        return
-servers.append({
-    "name": server_name,
-    "command": command,
-    "args": args,
-    "env": env_values
-})
-toml.dump(config, codex_toml_path)
-print(f"✓ {path}: {server_name} added")
-```
-
-### 4.5 写入前确认
-
-默认在写入前展示预览，要求用户确认：
+默认在执行前展示预览，要求用户确认：
 
 ```
-The following configuration will be written:
+The following will be written to ~/.agents/mcp2cli/servers.yaml:
 
-  Server: mcp-atlassian
-  Command: uvx mcp-atlassian
-  Environment:
-    JIRA_URL = https://your-company.atlassian.net
-    JIRA_API_TOKEN = ****  (sensitive)
-
-  Targets:
-    ~/.claude.json          → will add
-    ~/.cursor/mcp.json      → will add
-    ~/.codex/config.toml    → already exists, skip
+  mcp-atlassian:
+    command: uvx mcp-atlassian
+    env:
+      JIRA_URL = https://your-company.atlassian.net
+      JIRA_API_TOKEN = ****  (sensitive)
 
   Source: https://github.com/sooperset/mcp-atlassian
 
@@ -374,7 +358,7 @@ Proceed? [Y/n]
 
 ## 五、Step Pipeline（install 专属）
 
-`mcp2cli install` 在 `add` 完成后，通过 Step Pipeline 依次执行 scan → generate cli → generate skill。
+`mcp2cli install` 通过统一的 Step Pipeline 依次执行 mcp install → scan → generate cli → generate skill → skill sync。
 
 ### 5.1 Step 数据结构
 
@@ -393,21 +377,33 @@ class Step:
 ```python
 pipeline: list[Step] = [
     Step(
+        name="mcp-install",
+        run=lambda: run_mcp_install(server_name),
+        retry_cmd=f"mcp2cli mcp install {server_name}",
+    ),
+    Step(
         name="scan",
         run=lambda: run_scan(server_name),
         retry_cmd=f"mcp2cli scan {server_name}",
+        depends_on=["mcp-install"],   # mcp install 失败则跳过
     ),
     Step(
         name="generate-cli",
         run=lambda: run_generate_cli(server_name),
         retry_cmd=f"mcp2cli generate cli {server_name}",
-        depends_on=["scan"],        # scan 失败则跳过
+        depends_on=["scan"],          # scan 失败则跳过
     ),
     Step(
         name="generate-skill",
         run=lambda: run_generate_skill(server_name),
         retry_cmd=f"mcp2cli generate skill {server_name}",
         depends_on=["generate-cli"],
+    ),
+    Step(
+        name="skill-sync",
+        run=lambda: run_skill_sync(server_name),
+        retry_cmd=f"mcp2cli skill sync {server_name}",
+        depends_on=["generate-skill"],
     ),
 ]
 
@@ -434,7 +430,7 @@ for step in pipeline:
 ### 5.3 跳过 Pipeline
 
 ```bash
-# 只写配置文件，等价于直接用 mcp2cli add
+# 只安装 MCP server，等价于直接用 mcp2cli mcp install
 mcp2cli install mcp-atlassian --skip-generate
 ```
 
@@ -459,21 +455,14 @@ $ mcp2cli install mcp-atlassian
    CONFLUENCE_URL (Your Confluence URL, optional)
    > (skip)
 
-📝 Configuration preview:
-   Server: mcp-atlassian
-   Command: uvx mcp-atlassian
-   Env: JIRA_URL, JIRA_API_TOKEN (2 values set)
-
-   Targets:
-     ~/.claude.json        → will add
-     ~/.cursor/mcp.json    → will add
-     ~/.codex/config.toml  → will add
+📝 Will write to ~/.agents/mcp2cli/servers.yaml:
+   mcp-atlassian:
+     command: uvx mcp-atlassian
+     env: JIRA_URL, JIRA_API_TOKEN (2 values set)
 
    Proceed? [Y/n] y
 
-✓ ~/.claude.json: mcp-atlassian added
-✓ ~/.cursor/mcp.json: mcp-atlassian added
-✓ ~/.codex/config.toml: mcp-atlassian added
+✓ servers.yaml: mcp-atlassian added
 
 🔧 Scanning mcp-atlassian...
    Found 65 tools. Written to ~/.agents/mcp2cli/tools/mcp-atlassian.json
@@ -494,13 +483,17 @@ $ mcp2cli install mcp-atlassian
    Written to ~/.agents/mcp2cli/cli/mcp-atlassian.yaml
 
 🧩 Generating skill definitions...
-   Generated 12 skills for mcp-atlassian
    Written to ~/.agents/mcp2cli/skills/mcp-atlassian/
+
+🔗 Syncing skill to AI clients...
+   ✓ ~/.claude/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ✓ ~/.cursor/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ✓ ~/.codex/skills/mcp-atlassian   → ~/.agents/mcp2cli/skills/mcp-atlassian/
 
 ✅ Installation complete!
    Next steps:
    - Use CLI: mcp2cli mcp-atlassian jira issue create --help
-   - Use skill: mcp2cli mcp-atlassian jira (in Claude Code)
+   - Skill is now available in Claude Code, Cursor, and Codex
 ```
 
 ### 6.2 已存在时跳过
@@ -511,17 +504,10 @@ $ mcp2cli install mcp-atlassian
 🔍 Searching for mcp-atlassian installation info...
    Found: mcp-atlassian (PyPI)
 
-📝 Configuration preview:
-   Targets:
-     ~/.claude.json        → already exists, skip
-     ~/.cursor/mcp.json    → already exists, skip
-     ~/.codex/config.toml  → will add
+📝 Will write to ~/.agents/mcp2cli/servers.yaml:
+   ⊘ mcp-atlassian already exists, skipped
 
-   Proceed? [Y/n] y
-
-⊘ ~/.claude.json: mcp-atlassian already exists, skipped
-⊘ ~/.cursor/mcp.json: mcp-atlassian already exists, skipped
-✓ ~/.codex/config.toml: mcp-atlassian added
+   Proceed with pipeline anyway? [Y/n] y
 
 🔧 Scanning mcp-atlassian...
    ...
@@ -539,7 +525,7 @@ $ mcp2cli install mcp-jiraa
      - mcp-atlassian (includes Jira + Confluence)
 
    You can also provide config manually:
-     mcp2cli install mcp-jiraa --command uvx --args mcp-jiraa
+     mcp2cli mcp install mcp-jiraa --command uvx --args mcp-jiraa
 ```
 
 ### 6.4 预设 env 跳过交互
@@ -553,18 +539,34 @@ $ mcp2cli install mcp-atlassian \
 🔍 Searching for mcp-atlassian installation info...
    Found: mcp-atlassian (PyPI)
 
-✓ ~/.claude.json: mcp-atlassian added
-✓ ~/.cursor/mcp.json: mcp-atlassian added
-✓ ~/.codex/config.toml: mcp-atlassian added
+✓ servers.yaml: mcp-atlassian added
 
 🔧 Scanning mcp-atlassian... 65 tools found.
 🤖 Generating CLI command tree... 65/65 tools ✓
-🧩 Generating skill definitions... 12 skills ✓
+🧩 Generating skill definitions... ✓
+🔗 Syncing skill... claude ✓  cursor ✓  codex ✓
 
 ✅ Installation complete!
 ```
 
-### 6.5 Dry-run 模式
+### 6.5 单独同步 skill
+
+```
+# 已有 skill，只想同步软链接到各客户端
+$ mcp2cli skill sync mcp-atlassian
+
+🔗 Syncing skill to AI clients...
+   ✓ ~/.claude/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ✓ ~/.cursor/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ⊘ ~/.codex/skills/mcp-atlassian   already exists, skipped
+
+# 同步所有已生成 skill 的 server
+$ mcp2cli skill sync
+   mcp-atlassian: claude ✓  cursor ✓  codex ✓
+   playwright:    claude ✓  cursor ✓  codex ✓
+```
+
+### 6.6 Dry-run 模式
 
 ```
 $ mcp2cli install mcp-atlassian --dry-run
@@ -576,28 +578,18 @@ $ mcp2cli install mcp-atlassian --dry-run
    JIRA_URL: > https://mycompany.atlassian.net
    JIRA_API_TOKEN: > ********
 
-📝 [DRY RUN] Would write to:
+📝 [DRY RUN] Would write to ~/.agents/mcp2cli/servers.yaml:
+   mcp-atlassian:
+     command: uvx
+     args: [mcp-atlassian]
+     env:
+       JIRA_URL: https://mycompany.atlassian.net
+       JIRA_API_TOKEN: ...
 
-   ~/.claude.json:
-   {
-     "mcpServers": {
-       "mcp-atlassian": {
-         "command": "uvx",
-         "args": ["mcp-atlassian"],
-         "env": { "JIRA_URL": "...", "JIRA_API_TOKEN": "..." }
-       }
-     }
-   }
-
-   ~/.cursor/mcp.json:
-   (same as above)
-
-   ~/.codex/config.toml:
-   [[mcp_servers]]
-   name = "mcp-atlassian"
-   command = "uvx"
-   args = ["mcp-atlassian"]
-   ...
+   [DRY RUN] Would symlink:
+   ~/.claude/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ~/.cursor/skills/mcp-atlassian  → ~/.agents/mcp2cli/skills/mcp-atlassian/
+   ~/.codex/skills/mcp-atlassian   → ~/.agents/mcp2cli/skills/mcp-atlassian/
 
    No files were modified.
 ```
@@ -612,38 +604,42 @@ $ mcp2cli install mcp-atlassian --dry-run
 | scan 失败（server 无法启动） | 打印警告，提示手动重试，不阻断整体流程 |
 | generate 失败 | 打印警告，提示手动重试 |
 | 所有目标配置均已存在 | 提示全部跳过，询问是否要 `--force` 覆盖 |
+| skill sync：skill 文件不存在 | 报错，提示先运行 `mcp2cli generate skill <server>` |
+| skill sync：客户端目录不存在 | 自动创建目录后再创建软链接 |
 
 ## 八、代码实现位置
 
 ```
 mcp2cli/
-├── main.py                    # 新增 add / install 子命令
+├── main.py                    # 新增 mcp / skill / install 子命令
 ├── installer/
 │   ├── __init__.py
 │   ├── ai_search.py           # AI 搜索安装信息（claude -p 调用、prompt 构造、JSON 解析）
-│   ├── config_writer.py       # 三配置文件写入（Claude/Cursor/Codex 各一个写入函数）
+│   ├── servers_writer.py      # 写入 ~/.agents/mcp2cli/servers.yaml
 │   ├── interactive.py         # 交互式 env 输入（密码模式、可选跳过）
+│   ├── skill_sync.py          # skill sync：创建/更新各客户端 skill 目录的软链接
 │   └── pipeline.py            # Step dataclass + pipeline runner
 ```
 
 ## 九、与现有模块的关系
 
 ```
-mcp2cli add <server>           mcp2cli install <server>
-    │                               │
-    │                               ├─ 调用 add（复用上述所有模块）
-    │                               │
-    ├── installer/ai_search.py      └─ installer/pipeline.py  ← 新增
-    │     调用 claude -p                  Step pipeline runner
+mcp2cli mcp install <server>   mcp2cli skill sync [server]    mcp2cli install <server>
+    │                               │                               │
+    │                               │                               ├─ 调用 mcp install
+    │                               │                               │
+    ├── installer/ai_search.py      └── installer/skill_sync.py     └─ installer/pipeline.py
+    │     调用 claude -p                  创建 symlink                    Step pipeline runner
     │
-    ├── installer/config_writer.py
-    │     读写 ~/.claude.json 等
+    ├── installer/servers_writer.py
+    │     写入 servers.yaml
     │
     └── installer/interactive.py
           getpass / input
 
 pipeline 内部调用（已有模块）：
-    scan        → scanner.py
+    scan          → scanner.py
     generate cli  → generator/cli_gen.py
     generate skill → generator/skill_gen.py
+    skill sync    → installer/skill_sync.py
 ```
