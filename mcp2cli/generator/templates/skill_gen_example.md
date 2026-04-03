@@ -1,139 +1,8 @@
-# 6.1 Skill 生成模板参考
+# Skill File Collection Example
 
-本文档包含 `mcp2cli generate skill` 使用的两个核心模板文件的完整内容，供查阅和维护。
+This file contains a complete Skill file collection example, showing the standard format for the generated files.
 
-> 源自 [6.0-skill-generation.md](6.0-skill-generation.md) 的 6.7 和 6.8 节。
-
----
-
-## skill_gen_skill.md 完整内容
-
-存储位置：`mcp2cli/generator/templates/skill_gen_skill.md`
-
-```markdown
-# Skill 文件生成规则
-
-## 目标
-
-从 CLI 映射文件 (`cli/<server>.yaml`) 和 tool schema (`tools/<server>.json`)
-生成 agent 可用的 Skill 文件集合，使 agent 能够高效使用 mcp2cli 命令，
-同时将上下文消耗从 ~5000 tokens（原始 MCP tool schema）降低到 ~600 tokens。
-
-## 输出文件结构
-
-### SKILL.md（主文件）
-
-agent 每次对话自动加载，必须极度精简。
-
-**硬性限制：≤ 600 tokens**
-
-**正文结构（按此顺序）：**
-
-1. Frontmatter（name + description + source_version + source_cli_hash + generated_at）
-2. `# <server> (via mcp2cli)` + 一行概述
-3. `## Shortcuts` — 快捷方式列表（无需解释等价形式）
-4. `## Commands` — 命令总览表（按 group 分 ###，含 Example 和 Ref 列）
-5. `## Discover Parameters` — 提示 --help 和 reference/
-6. `## User Notes` — 固定 MUST READ 链接指向 users/SKILL.md（LLM 生成）
-
-**命令形式优先级（最短形式优先）：**
-
-1. 有 `command_shortcuts` → 使用快捷方式：`mcp2cli jira issue create`
-2. 有 `server_aliases` → 使用别名：`mcp2cli atlassian jira issue create`
-3. 都没有 → 使用全名：`mcp2cli mcp-atlassian jira issue create`
-
-**命令筛选（每 group 最多 8 个）：**
-
-优先级：create > get > search > list > update > delete > 其他
-子资源操作（comment, watcher, worklog, label, attachment 等）不列入主文件。
-
-**Commands 表格列说明：**
-
-| 列 | 说明 |
-|---|---|
-| Command | 命令路径（使用最短形式） |
-| Description | 操作描述 |
-| Example | 常用示例（完整命令），多条用 `<br>` 分隔。高频命令 2-3 条，低频命令 1 条或留空 |
-| Ref | 链接到 reference/ 下的详细文件 |
-
-> **Note**: Ref 列链接指向 reference/ 目录下的文件，包含该命令的完整参数说明和更多使用示例。Agent 需要更多信息时应读取对应 reference 文件。
-
-### reference/<group>.md 或 reference/<group>-<resource>.md
-
-**拆分规则：**
-- group 下 ≤5 个叶子命令 → 合并为 `<group>.md`
-- group 下 >5 个叶子命令 → 按 resource 拆分
-
-**每个命令的内容：**
-- 1-3 个使用示例（展示 required 参数）
-- "Also supports" 行列出 optional 参数名
-- 参数名从 inputSchema 提取，转换为 kebab-case
-
-**参数名转换：**
-- snake_case → kebab-case：`project_key` → `--project-key`
-- camelCase → kebab-case：`issueKey` → `--issue-key`
-
-**单文件限制：≤ 200 行**
-
-### users/ 目录
-
-用户自定义内容区域，永不被 generate/update 覆盖。首次生成时创建 `users/` 目录、`.gitkeep` 占位文件和 `workflows.md`。
-
-**users/workflows.md**：
-- AI 首次生成时写入 5-10 个常见多步骤工作流场景
-- 按工作流组织（如 "JIRA Workflow", "Confluence Workflow"）
-- 每个场景包含多条命令的组合操作
-- 使用最短命令形式
-- **永不被 generate/update 覆盖**，用户可自由编辑和扩展
-
-> **Note**: workflows.md 与 Commands 表中的 Example 列互补。Example 列展示单条命令的用法，workflows.md 则展示需要多条命令配合完成的复杂工作流（如"创建 issue → 分配 → 加入 sprint → 流转状态"）。
-
-`## User Notes` 段由 LLM 生成，固定格式：
-
-```markdown
-## User Notes
-
-> **MUST READ** [users/SKILL.md](users/SKILL.md) for custom workflows and tips.
-> See [users/workflows.md](users/workflows.md) for multi-step workflow examples.
-> Not overwritten by updates.
-```
-
-## Frontmatter 规范
-
-```yaml
----
-name: <server-name>
-description: <英文一句话，列出核心能力关键词>
-source_version: "<来自 cli/*.yaml 的 version 字段>"
-source_cli_hash: "<cli/*.yaml 内容的 SHA-256 前 8 位 hex>"
-generated_at: "<ISO 8601 时间戳>"
----
-```
-
-- `source_version`：来自 CLI YAML 的 `version` 字段（即 MCP server 版本），用于人类快速识别版本
-- `source_cli_hash`：CLI YAML 文件内容的 SHA-256 前 8 位，由程序计算后传入 Prompt，LLM 直接写入。用于程序判断 skill 是否与 CLI 同步
-- `generated_at`：生成或更新的时间戳
-
-description 示例：
-- `Manage JIRA issues, sprints, boards, and Confluence pages via CLI. Use when user needs to create/search/update JIRA tickets, manage sprints, or edit Confluence pages.`
-- `Automate GitHub operations via CLI. Use when user needs to manage repos, pull requests, issues, or releases.`
-
-## 描述撰写规范
-
-- 语言：英文
-- 格式：`<做什么>. Use when <触发条件>.`
-- 包含可触发的关键动词和名词
-```
-
----
-
-## skill_gen_example.md 完整内容
-
-存储位置：`mcp2cli/generator/templates/skill_gen_example.md`
-
-本文件包含一个完整的 Skill 文件集合示例，展示三个文件的标准格式。
-
-### SKILL.md 示例
+## SKILL.md Example
 
 ```markdown
 ---
@@ -191,7 +60,7 @@ Append `--help` to any command for full parameter list:
 > Not overwritten by updates.
 ```
 
-### reference/jira-issue.md 示例
+## reference/jira-issue.md Example
 
 ```markdown
 # JIRA Issue Commands
@@ -261,9 +130,9 @@ Also supports: `--comment`, `--comment-visibility`
 Use `mcp2cli jira issue <action> --help` for full parameter details.
 ```
 
-### users/workflows.md 示例
+## users/workflows.md Example
 
-首次 `generate skill` 时生成，之后不再覆盖。
+Generated on first `generate skill` run, never overwritten afterwards.
 
 ```markdown
 # Common Workflow Examples

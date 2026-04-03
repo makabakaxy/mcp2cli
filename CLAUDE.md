@@ -1,5 +1,9 @@
 # CLAUDE.md
 
-## 设计文档规则
+## Design Document Rules
 
-1. **修改任何 `design/` 下的子设计 MD 文件后，必须同步更新 `design/0.0-design-overview.md`**，确保 overview 与子文档保持一致。
+1. **After modifying any sub-design MD file under `design/`, you must also update `design/0.0-design-overview.md`** to keep the overview consistent with the sub-documents. Design documents are written in Chinese.
+
+## Language Rules
+
+1. **Everything outside the `design/` folder must be written in English**, including code comments, examples, commit messages, etc.

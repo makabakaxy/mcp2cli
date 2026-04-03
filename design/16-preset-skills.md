@@ -6,7 +6,7 @@
 
 mcp2cli 的 `convert` 和 `install` 流程中，`scan` + `generate cli` + `generate skill` 三步需要启动 MCP server 并调用 LLM，耗时约 2-3 分钟。对于常用的 MCP server（如 mcp-atlassian、playwright 等），这些生成结果是通用的、可复用的。
 
-**Preset Skills** 将常用 MCP server 的全部转换产物（tools JSON、CLI YAML、SKILL.md + reference/ + examples/）预先生成并托管在远程 GitHub 仓库。用户在 `convert` 或 `install` 时，系统自动检查是否存在可用 preset：
+**Preset Skills** 将常用 MCP server 的全部转换产物（tools JSON、CLI YAML、SKILL.md + reference/ + users/workflows.md）预先生成并托管在远程 GitHub 仓库。用户在 `convert` 或 `install` 时，系统自动检查是否存在可用 preset：
 
 - **有 preset**：提示用户拉取，跳过 scan + generate cli + generate skill，直接进入 skill sync
 - **无 preset**：继续正常 AI 生成流程
@@ -18,33 +18,41 @@ mcp2cli 的 `convert` 和 `install` 流程中，`scan` + `generate cli` + `gener
 
 ## 16.2 远程仓库结构
 
-GitHub 仓库 `mcp2cli-presets`（公开仓库），结构如下：
+GitHub 仓库 `mcp2cli-presets`（公开仓库），结构如下（多版本）：
 
 ```
 mcp2cli-presets/
-├── index.json                    # 全局索引（所有可用 preset 的元数据摘要）
+├── index.json                    # 全局索引（所有可用 preset 及版本列表）
 └── presets/
     ├── mcp-atlassian/
-    │   ├── manifest.json         # 该 preset 的详细元数据
-    │   ├── tools.json            # 等同于 ~/.agents/mcp2cli/tools/<server>.json
-    │   ├── cli.yaml              # 等同于 ~/.agents/mcp2cli/cli/<server>.yaml
-    │   └── skills/
-    │       ├── SKILL.md
-    │       ├── reference/
-    │       │   ├── jira-issue.md
-    │       │   ├── jira-sprint.md
-    │       │   └── confluence-page.md
-    │       └── examples/
-    │           └── examples.md
+    │   ├── latest.json           # {"version": "1.3.0"} — 指向最新版本
+    │   ├── 1.2.3/
+    │   │   ├── manifest.json
+    │   │   ├── tools.json
+    │   │   ├── cli.yaml
+    │   │   └── skills/
+    │   │       ├── SKILL.md
+    │   │       ├── reference/
+    │   │       │   ├── jira-issue.md
+    │   │       │   ├── jira-sprint.md
+    │   │       │   └── confluence-page.md
+    │   │       └── users/
+    │   │           └── workflows.md
+    │   └── 1.3.0/
+    │       ├── manifest.json
+    │       ├── tools.json
+    │       ├── cli.yaml
+    │       └── skills/...
     ├── playwright/
-    │   ├── manifest.json
-    │   ├── tools.json
-    │   ├── cli.yaml
-    │   └── skills/
+    │   ├── latest.json
+    │   └── 0.5.0/
+    │       ├── manifest.json
     │       └── ...
     └── mcp-github/
         └── ...
 ```
+
+**与旧结构（v1，无版本子目录）的兼容**：客户端优先请求 `presets/{server}/{version}/manifest.json`，404 时回退到 `presets/{server}/manifest.json`（旧仓库扁平结构）。
 
 ### 16.2.1 index.json 格式
 
@@ -52,29 +60,35 @@ mcp2cli-presets/
 
 ```json
 {
-  "version": 1,
-  "updated_at": "2026-04-01T00:00:00Z",
+  "version": 2,
+  "updated_at": "2026-04-03T00:00:00Z",
   "presets": [
     {
       "server": "mcp-atlassian",
-      "server_version": "1.2.3",
-      "tool_count": 65,
+      "latest": "1.3.0",
+      "versions": ["1.3.0", "1.2.3"],
       "description": "JIRA + Confluence operations",
-      "updated_at": "2026-04-01T00:00:00Z"
+      "updated_at": "2026-04-03T00:00:00Z",
+      "server_version": "1.3.0",
+      "tool_count": 68
     },
     {
       "server": "playwright",
-      "server_version": "0.5.0",
-      "tool_count": 12,
+      "latest": "0.5.0",
+      "versions": ["0.5.0"],
       "description": "Browser automation",
-      "updated_at": "2026-03-28T00:00:00Z"
+      "updated_at": "2026-03-28T00:00:00Z",
+      "server_version": "0.5.0",
+      "tool_count": 12
     },
     {
       "server": "mcp-github",
-      "server_version": "1.0.0",
-      "tool_count": 30,
+      "latest": "1.0.0",
+      "versions": ["1.0.0"],
       "description": "GitHub repos, issues, PRs, and releases",
-      "updated_at": "2026-03-25T00:00:00Z"
+      "updated_at": "2026-03-25T00:00:00Z",
+      "server_version": "1.0.0",
+      "tool_count": 30
     }
   ]
 }
@@ -82,13 +96,19 @@ mcp2cli-presets/
 
 | 字段 | 说明 |
 |------|------|
-| `version` | index 格式版本号，当前为 1 |
+| `version` | index 格式版本号，当前为 2（v1 兼容见下方说明） |
 | `updated_at` | index 最后更新时间 |
 | `presets[].server` | MCP server 名称（与 servers.yaml 中的 key 一致） |
-| `presets[].server_version` | 预设所基于的 MCP server 版本 |
-| `presets[].tool_count` | tool 数量 |
+| `presets[].latest` | 最新可用版本号 |
+| `presets[].versions` | 所有可用版本列表（降序排列） |
 | `presets[].description` | 一行描述 |
 | `presets[].updated_at` | 该 preset 的最后更新时间 |
+| `presets[].server_version` | （v1 兼容）等同于 `latest`，旧客户端使用此字段 |
+| `presets[].tool_count` | （v1 兼容）最新版本的 tool 数量 |
+
+**v1 → v2 向后兼容**：
+- 新 index 保留 `server_version` 和 `tool_count` 字段，使旧客户端（不识别 `latest`/`versions`）仍可正常工作
+- 新客户端读到 v1 index 时，将 `server_version` 映射为 `latest`，`versions` 设为 `[server_version]`
 
 ### 16.2.2 manifest.json 格式
 
@@ -112,7 +132,7 @@ mcp2cli-presets/
     "skills/reference/jira-project.md",
     "skills/reference/confluence-page.md",
     "skills/reference/confluence-attachment.md",
-    "skills/examples/examples.md"
+    "skills/users/workflows.md"
   ]
 }
 ```
@@ -128,7 +148,10 @@ mcp2cli-presets/
 ### 16.3.1 mcp2cli preset list
 
 ```bash
-mcp2cli preset list [OPTIONS]
+mcp2cli preset list [SERVER_NAME] [OPTIONS]
+
+Arguments:
+  server-name  (可选) 查看某个 preset 的所有可用版本
 
 Options:
   --refresh    强制刷新远程索引（忽略本地缓存）
@@ -138,23 +161,37 @@ Options:
 
 ```
 $ mcp2cli preset list
-Available presets (from mcp2cli-presets):
-  NAME              VERSION   TOOLS   UPDATED
-  mcp-atlassian     1.2.3     65      2026-04-01
-  playwright        0.5.0     12      2026-03-28
-  mcp-github        1.0.0     30      2026-03-25
-  mcp-slack         0.8.2     20      2026-03-20
+Available presets:
+  NAME              LATEST    VERSIONS                UPDATED
+  mcp-atlassian     1.3.0     1.3.0, 1.2.3            2026-04-03
+  playwright        0.5.0     0.5.0                   2026-03-28
+  mcp-github        1.0.0     1.0.0                   2026-03-25
+  mcp-slack         0.8.2     0.8.2, 0.7.0            2026-03-20
 
 4 presets available. Use 'mcp2cli preset pull <name>' to download.
+```
+
+查看某个 preset 的详细版本信息：
+
+```
+$ mcp2cli preset list mcp-atlassian
+Preset: mcp-atlassian
+  Latest:      1.3.0
+  Versions:    1.3.0, 1.2.3
+  Updated:     2026-04-03
+  Description: JIRA + Confluence operations
+
+Use 'mcp2cli preset pull mcp-atlassian@<version>' to download a specific version.
 ```
 
 ### 16.3.2 mcp2cli preset pull
 
 ```bash
-mcp2cli preset pull <server-name> [OPTIONS]
+mcp2cli preset pull <server-name[@version]> [OPTIONS]
 
 Arguments:
-  server-name      要拉取的 preset 名称
+  server-name[@version]   要拉取的 preset 名称，可选 @version 指定版本
+                          不指定版本时拉取 latest
 
 Options:
   --sync           拉取后自动执行 skill sync（复制到各客户端 + disable MCP）
@@ -166,23 +203,27 @@ Options:
 
 ```
 $ mcp2cli preset pull mcp-atlassian
-⬇ Pulling mcp-atlassian preset (v1.2.3, 65 tools)...
+⬇ Pulling mcp-atlassian preset (v1.3.0, latest)...
    ✓ tools/mcp-atlassian.json
    ✓ cli/mcp-atlassian.yaml
    ✓ skills/mcp-atlassian/SKILL.md
    ✓ skills/mcp-atlassian/reference/ (6 files)
-   ✓ skills/mcp-atlassian/examples/examples.md
+   ✓ skills/mcp-atlassian/users/workflows.md
 Done! Files written to ~/.agents/mcp2cli/
 
-Next: run 'mcp2cli skill sync mcp-atlassian' to copy to AI clients.
-      Or use 'mcp2cli preset pull mcp-atlassian --sync' to do it in one step.
+$ mcp2cli preset pull mcp-atlassian@1.2.3
+⬇ Pulling mcp-atlassian preset (v1.2.3)...
+   ✓ tools/mcp-atlassian.json
+   ✓ cli/mcp-atlassian.yaml
+   ✓ skills/mcp-atlassian/ (SKILL.md + reference + users/workflows.md)
+Done! Files written to ~/.agents/mcp2cli/
 ```
 
 带 `--sync`：
 
 ```
 $ mcp2cli preset pull mcp-github --sync
-⬇ Pulling mcp-github preset (v1.0.0, 30 tools)...
+⬇ Pulling mcp-github preset (v1.0.0)...
    ✓ tools, cli, skills downloaded
 
 🔗 Syncing skill to AI clients...
@@ -190,11 +231,12 @@ $ mcp2cli preset pull mcp-github --sync
 Done!
 ```
 
-### 16.3.3 convert/install 的 --no-preset 选项
+### 16.3.3 convert/install 的 preset 选项
 
 ```bash
-mcp2cli convert mcp-atlassian --no-preset   # 跳过 preset 检查，强制走 AI 生成
-mcp2cli install mcp-atlassian --no-preset   # 同上
+mcp2cli convert mcp-atlassian --no-preset           # 跳过 preset 检查，强制走 AI 生成
+mcp2cli install mcp-atlassian --no-preset           # 同上
+mcp2cli install mcp-atlassian --preset-version=1.2.3 # 使用指定版本的 preset
 ```
 
 ## 16.4 Pipeline 集成
@@ -412,15 +454,17 @@ PRESET_REPO_URL = "https://raw.githubusercontent.com/<org>/mcp2cli-presets/main"
 #   repo_url: "https://raw.githubusercontent.com/myorg/mcp2cli-presets/main"
 ```
 
-**URL 构造规则：**
+**URL 构造规则（多版本）：**
 
 ```
 index.json    → {PRESET_REPO_URL}/index.json
-manifest.json → {PRESET_REPO_URL}/presets/{server}/manifest.json
-tools.json    → {PRESET_REPO_URL}/presets/{server}/tools.json
-cli.yaml      → {PRESET_REPO_URL}/presets/{server}/cli.yaml
-skills/...    → {PRESET_REPO_URL}/presets/{server}/skills/...
+manifest.json → {PRESET_REPO_URL}/presets/{server}/{version}/manifest.json
+tools.json    → {PRESET_REPO_URL}/presets/{server}/{version}/tools.json
+cli.yaml      → {PRESET_REPO_URL}/presets/{server}/{version}/cli.yaml
+skills/...    → {PRESET_REPO_URL}/presets/{server}/{version}/skills/...
 ```
+
+**回退（旧仓库兼容）**：若 `{server}/{version}/manifest.json` 返回 404，回退到 `{server}/manifest.json`（扁平结构）。
 
 ### 16.6.2 本地缓存策略
 
@@ -499,13 +543,14 @@ preset:
 
 ```
 mcp2cli/
-├── main.py                    # 新增 preset list / preset pull 子命令
-├── preset/                    # 新增包
+├── main.py                    # preset list / preset pull 子命令（支持 @version 语法）
+├── preset/                    # preset 包
 │   ├── __init__.py
-│   ├── models.py              # PresetIndex, PresetEntry, Manifest 数据模型
+│   ├── models.py              # PresetIndex, PresetEntry, Manifest 数据模型（多版本支持）
 │   ├── registry.py            # fetch_index(), find_preset() - 远程索引查询 + 缓存
-│   ├── downloader.py          # pull_preset() - 按 manifest 下载文件到目标目录
-│   └── checker.py             # check_and_pull_preset() - pipeline 集成的入口函数
+│   ├── downloader.py          # pull_preset() - 按 manifest 下载文件到目标目录（支持版本路径）
+│   ├── checker.py             # check_and_pull_preset() - pipeline 集成的入口函数
+│   └── version.py             # parse_preset_spec() - 解析 'name@version' 语法
 ├── installer/
 │   └── pipeline.py            # Step dataclass 扩展 skip_if 字段 + runner 扩展
 ```
@@ -519,10 +564,15 @@ mcp2cli/
 class PresetEntry:
     """index.json 中单个 preset 的元数据"""
     server: str
-    server_version: str | None
-    tool_count: int
+    latest: str                    # 最新版本号
+    versions: list[str]            # 所有可用版本（降序）
     description: str
     updated_at: str
+    server_version: str | None = None  # v1 兼容
+    tool_count: int = 0                # v1 兼容
+
+    def resolve_version(self, requested: str | None) -> str:
+        """解析请求的版本号，None → latest，不存在 → ValueError"""
 
 @dataclass
 class PresetIndex:
@@ -571,18 +621,19 @@ def find_preset(server_name: str) -> PresetEntry | None:
 **`preset/downloader.py`**：
 
 ```python
-def pull_preset(server_name: str, force: bool = False) -> bool:
+def pull_preset(server_name: str, version: str | None = None, force: bool = False) -> bool:
     """
     下载 preset 的所有文件到本地运行时目录。
 
     流程：
-    1. 下载 manifest.json
-    2. 检查本地是否已有文件（非 --force 时提示）
-    3. 逐个下载 manifest.files 列表中的文件
+    1. 解析版本：version=None → 从 index 获取 latest
+    2. 下载 manifest.json（优先 {server}/{version}/manifest.json，404 回退到 {server}/manifest.json）
+    3. 检查本地是否已有文件（非 --force 时提示）
+    4. 逐个下载 manifest.files 列表中的文件
        - tools.json → ~/.agents/mcp2cli/tools/<server>.json
        - cli.yaml   → ~/.agents/mcp2cli/cli/<server>.yaml
        - skills/*   → ~/.agents/mcp2cli/skills/<server>/*
-    4. 创建 users/ 目录 + .gitkeep（如不存在）
+    5. 创建 users/ 目录 + .gitkeep（如不存在）
 
     Returns:
         True 下载成功，False 失败
@@ -597,6 +648,7 @@ def download_file(url: str, target_path: Path) -> bool:
 ```python
 def check_and_pull_preset(
     server_name: str,
+    version: str | None = None,
     no_preset: bool = False,
     yes: bool = False,
     force: bool = False,
@@ -609,9 +661,10 @@ def check_and_pull_preset(
     流程：
     1. --no-preset → return False
     2. 拉取 index → 查找 preset → 未找到 → return False
-    3. 展示 preset 信息 → 用户确认（--yes 跳过）→ 拒绝 → return False
-    4. 检查已有文件 → 已有且非 --force → 提示覆盖
-    5. 下载 preset → 成功 → return True
+    3. 验证请求版本是否可用（如指定了 version）
+    4. 展示 preset 信息 → 用户确认（--yes 跳过）→ 拒绝 → return False
+    5. 检查已有文件 → 已有且非 --force → 提示覆盖
+    6. 下载 preset（指定版本或 latest）→ 成功 → return True
 
     Returns:
         True 表示 preset 使用成功（后续步骤可跳过）
@@ -643,7 +696,7 @@ $ mcp2cli install mcp-atlassian
 ⬇ Pulling preset...
    ✓ tools/mcp-atlassian.json (65 tools)
    ✓ cli/mcp-atlassian.yaml (65 commands)
-   ✓ skills/mcp-atlassian/ (SKILL.md + 6 reference files + examples)
+   ✓ skills/mcp-atlassian/ (SKILL.md + 6 reference files + users/workflows.md)
    Skipping: scan, generate cli, generate skill (using preset)
 
 🔗 Syncing skill to AI clients...
@@ -772,7 +825,7 @@ $ mcp2cli preset pull mcp-github
 ⬇ Pulling mcp-github preset (v1.0.0, 30 tools)...
    ✓ tools/mcp-github.json
    ✓ cli/mcp-github.yaml
-   ✓ skills/mcp-github/ (SKILL.md + 4 reference files + examples)
+   ✓ skills/mcp-github/ (SKILL.md + 4 reference files + users/workflows.md)
 Done! Files written to ~/.agents/mcp2cli/
 
 Next: run 'mcp2cli skill sync mcp-github' to copy to AI clients.
@@ -850,13 +903,14 @@ Done!
 ```
 mcp2cli/
 └── mcp2cli/
-    ├── preset/                      # 新增包
+    ├── preset/
     │   ├── __init__.py
-    │   ├── models.py               # PresetIndex, PresetEntry, Manifest 数据模型
+    │   ├── models.py               # PresetIndex, PresetEntry（多版本）, Manifest
     │   ├── registry.py             # fetch_index(), find_preset()
-    │   ├── downloader.py           # pull_preset(), download_file()
-    │   └── checker.py              # check_and_pull_preset()
+    │   ├── downloader.py           # pull_preset(version=), download_file()
+    │   ├── checker.py              # check_and_pull_preset(version=)
+    │   └── version.py              # parse_preset_spec() — 'name@version' 解析
     ├── installer/
     │   └── pipeline.py             # Step 扩展 skip_if + runner 扩展
-    └── main.py                     # 新增 preset list / preset pull 命令
+    └── main.py                     # preset list / preset pull 命令（@version 语法）
 ```

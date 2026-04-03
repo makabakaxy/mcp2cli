@@ -1,0 +1,279 @@
+server: mcp-atlassian
+version: "1.2.3"
+generated_at: "2026-04-01T00:00:00Z"
+generated_by: preset
+preset_source: "mcp2cli-bundled"
+
+server_aliases:
+  - atlassian
+
+command_shortcuts:
+  - jira
+  - confluence
+
+commands:
+  jira:
+    _description: "JIRA project management"
+    issue:
+      _description: "Issue operations"
+      create:
+        _tool: jira_create_issue
+        _description: "Create a new issue"
+        _examples:
+          - "mcp2cli jira issue create --project-key INFRA --summary 'Fix memory leak' --issue-type Task"
+      get:
+        _tool: jira_get_issue
+        _description: "Get issue details by key"
+        _examples:
+          - "mcp2cli jira issue get --issue-key PROJ-123"
+      search:
+        _tool: jira_search
+        _description: "Search issues using JQL"
+        _examples:
+          - "mcp2cli jira issue search --jql 'project=INFRA AND status=Open'"
+      update:
+        _tool: jira_update_issue
+        _description: "Update an existing issue"
+      delete:
+        _tool: jira_delete_issue
+        _description: "Delete an issue"
+      transition:
+        _tool: jira_transition_issue
+        _description: "Transition issue to a new status"
+      transitions:
+        _tool: jira_get_transitions
+        _description: "Get available status transitions"
+      dates:
+        _tool: jira_get_issue_dates
+        _description: "Get date and status transition history"
+      sla:
+        _tool: jira_get_issue_sla
+        _description: "Calculate SLA metrics"
+      images:
+        _tool: jira_get_issue_images
+        _description: "Get attached images"
+      batch-create:
+        _tool: jira_batch_create_issues
+        _description: "Create multiple issues in a batch"
+    comment:
+      _description: "Comment operations"
+      add:
+        _tool: jira_add_comment
+        _description: "Add a comment"
+        _examples:
+          - "mcp2cli jira comment add --issue-key PROJ-123 --body 'Fixed in latest build'"
+      edit:
+        _tool: jira_edit_comment
+        _description: "Edit an existing comment"
+    sprint:
+      _description: "Sprint operations"
+      list:
+        _tool: jira_get_sprints_from_board
+        _description: "List sprints for a board"
+      create:
+        _tool: jira_create_sprint
+        _description: "Create a new sprint"
+      update:
+        _tool: jira_update_sprint
+        _description: "Update a sprint"
+      issues:
+        _tool: jira_get_sprint_issues
+        _description: "Get issues from a sprint"
+      add-issues:
+        _tool: jira_add_issues_to_sprint
+        _description: "Add issues to a sprint"
+    board:
+      _description: "Board operations"
+      list:
+        _tool: jira_get_agile_boards
+        _description: "List agile boards"
+      issues:
+        _tool: jira_get_board_issues
+        _description: "Get board issues filtered by JQL"
+    project:
+      _description: "Project operations"
+      list:
+        _tool: jira_get_all_projects
+        _description: "List all projects"
+      issues:
+        _tool: jira_get_project_issues
+        _description: "Get all issues for a project"
+      components:
+        _tool: jira_get_project_components
+        _description: "Get project components"
+      versions:
+        _tool: jira_get_project_versions
+        _description: "Get project fix versions"
+    version:
+      _description: "Version/release operations"
+      create:
+        _tool: jira_create_version
+        _description: "Create a new fix version"
+      batch-create:
+        _tool: jira_batch_create_versions
+        _description: "Batch create multiple versions"
+    link:
+      _description: "Issue link operations"
+      types:
+        _tool: jira_get_link_types
+        _description: "Get available link types"
+      create:
+        _tool: jira_create_issue_link
+        _description: "Create a link between two issues"
+      remove:
+        _tool: jira_remove_issue_link
+        _description: "Remove a link"
+      epic:
+        _tool: jira_link_to_epic
+        _description: "Link an issue to an epic"
+      remote:
+        _tool: jira_create_remote_issue_link
+        _description: "Create a remote/web link"
+    watcher:
+      _description: "Watcher operations"
+      list:
+        _tool: jira_get_issue_watchers
+        _description: "List watchers"
+      add:
+        _tool: jira_add_watcher
+        _description: "Add a watcher"
+      remove:
+        _tool: jira_remove_watcher
+        _description: "Remove a watcher"
+    worklog:
+      _description: "Work log operations"
+      list:
+        _tool: jira_get_worklog
+        _description: "Get worklog entries"
+      add:
+        _tool: jira_add_worklog
+        _description: "Add a worklog entry"
+    field:
+      _description: "Field operations"
+      search:
+        _tool: jira_search_fields
+        _description: "Search fields by keyword"
+      options:
+        _tool: jira_get_field_options
+        _description: "Get allowed field options"
+    user:
+      _description: "User operations"
+      profile:
+        _tool: jira_get_user_profile
+        _description: "Get user profile"
+    dev:
+      _description: "Development info (PRs, commits, branches)"
+      get:
+        _tool: jira_get_issue_development_info
+        _description: "Get dev info for an issue"
+      batch:
+        _tool: jira_get_issues_development_info
+        _description: "Get dev info for multiple issues"
+    attachment:
+      _description: "Attachment operations"
+      download:
+        _tool: jira_download_attachments
+        _description: "Download attachments from an issue"
+    changelog:
+      _description: "Changelog operations"
+      batch:
+        _tool: jira_batch_get_changelogs
+        _description: "Get changelogs for multiple issues"
+    form:
+      _description: "ProForma form operations"
+      list:
+        _tool: jira_get_issue_proforma_forms
+        _description: "Get forms for an issue"
+      get:
+        _tool: jira_get_proforma_form_details
+        _description: "Get form details"
+      update:
+        _tool: jira_update_proforma_form_answers
+        _description: "Update form answers"
+  confluence:
+    _description: "Confluence wiki operations"
+    page:
+      _description: "Page operations"
+      get:
+        _tool: confluence_get_page
+        _description: "Get page content"
+        _examples:
+          - "mcp2cli confluence page get --page-id 12345"
+      create:
+        _tool: confluence_create_page
+        _description: "Create a new page"
+        _examples:
+          - "mcp2cli confluence page create --space-key TEAM --title 'Meeting Notes' --content '# Notes'"
+      update:
+        _tool: confluence_update_page
+        _description: "Update page content"
+      delete:
+        _tool: confluence_delete_page
+        _description: "Delete a page"
+      children:
+        _tool: confluence_get_page_children
+        _description: "Get child pages"
+      move:
+        _tool: confluence_move_page
+        _description: "Move page to a new parent or space"
+      diff:
+        _tool: confluence_get_page_diff
+        _description: "Get diff between two page versions"
+      history:
+        _tool: confluence_get_page_history
+        _description: "Get a historical version of a page"
+      views:
+        _tool: confluence_get_page_views
+        _description: "Get page view statistics"
+      images:
+        _tool: confluence_get_page_images
+        _description: "Get all images attached to a page"
+    search:
+      _tool: confluence_search
+      _description: "Search Confluence content"
+      _examples:
+        - "mcp2cli confluence search --query 'project documentation'"
+    comment:
+      _description: "Comment operations"
+      list:
+        _tool: confluence_get_comments
+        _description: "Get page comments"
+      add:
+        _tool: confluence_add_comment
+        _description: "Add a comment"
+      reply:
+        _tool: confluence_reply_to_comment
+        _description: "Reply to a comment"
+    label:
+      _description: "Label operations"
+      list:
+        _tool: confluence_get_labels
+        _description: "Get content labels"
+      add:
+        _tool: confluence_add_label
+        _description: "Add a label"
+    attachment:
+      _description: "Attachment operations"
+      list:
+        _tool: confluence_get_attachments
+        _description: "List attachments"
+      upload:
+        _tool: confluence_upload_attachment
+        _description: "Upload an attachment"
+      upload-batch:
+        _tool: confluence_upload_attachments
+        _description: "Upload multiple attachments"
+      download:
+        _tool: confluence_download_attachment
+        _description: "Download an attachment"
+      download-all:
+        _tool: confluence_download_content_attachments
+        _description: "Download all attachments for a page"
+      delete:
+        _tool: confluence_delete_attachment
+        _description: "Delete an attachment"
+    user:
+      _description: "User operations"
+      search:
+        _tool: confluence_search_user
+        _description: "Search users"
