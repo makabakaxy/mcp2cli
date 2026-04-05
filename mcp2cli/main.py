@@ -418,7 +418,7 @@ def install(
         preset_entry = probe_preset(server_name, version=preset_version, no_preset=no_preset)
         if preset_entry is not None:
             _display_preset_info(preset_entry, preset_version)
-
+        else:
             if not click.confirm("\nProceed?", default=True):
                 click.echo("Aborted.")
                 return
@@ -489,7 +489,7 @@ def convert(
 
     if preset_entry is not None:
         _display_preset_info(preset_entry, preset_version)
-
+    else:
         if not yes:
             if not click.confirm("\nProceed?", default=True):
                 click.echo("Aborted.")
@@ -559,12 +559,10 @@ def remove(
         click.echo(f"\n  Config: servers.yaml KEPT (--keep-config)")
 
     if plan.users_has_content and not force:
-        click.echo(
-            f"\n  Warning: users/ directory has custom content. "
-            f"Use --force to proceed.",
-            err=True,
+        plan.keep_users = not click.confirm(
+            "\n  users/ directory has custom content. Delete it too?",
+            default=False,
         )
-        raise SystemExit(1)
 
     if dry_run:
         click.echo("\n[DRY RUN] No files were modified.")

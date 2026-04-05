@@ -24,13 +24,28 @@ def delete_file(file_path: Path) -> bool:
         return False
 
 
-def delete_dir(dir_path: Path) -> bool:
-    """Delete a directory tree. Idempotent: returns True if doesn't exist."""
+def delete_dir(dir_path: Path, *, keep_users: bool = False) -> bool:
+    """Delete a directory tree. Idempotent: returns True if doesn't exist.
+
+    If *keep_users* is True, the ``users/`` subdirectory is preserved and
+    only the remaining contents are removed.
+    """
     if not dir_path.exists():
         return True
     try:
-        shutil.rmtree(dir_path)
-        click.echo(f"  ✓ {dir_path} removed")
+        if keep_users:
+            users_dir = dir_path / "users"
+            for item in dir_path.iterdir():
+                if item == users_dir:
+                    continue
+                if item.is_dir():
+                    shutil.rmtree(item)
+                else:
+                    item.unlink()
+            click.echo(f"  ✓ {dir_path} cleaned (users/ kept)")
+        else:
+            shutil.rmtree(dir_path)
+            click.echo(f"  ✓ {dir_path} removed")
         return True
     except OSError as e:
         click.echo(f"  Warning: could not delete {dir_path}: {e}", err=True)

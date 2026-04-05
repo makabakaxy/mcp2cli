@@ -32,7 +32,7 @@ def build_remove_pipeline(
     if plan.skills_dir:
         steps.append(Step(
             name="delete-skills",
-            run=lambda: delete_dir(plan.skills_dir),
+            run=lambda: delete_dir(plan.skills_dir, keep_users=plan.keep_users),
             retry_cmd=f"rm -rf {plan.skills_dir}",
         ))
 

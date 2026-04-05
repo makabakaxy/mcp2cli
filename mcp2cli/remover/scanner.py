@@ -28,6 +28,7 @@ class RemovalPlan:
 
     # User custom content
     users_has_content: bool = False
+    keep_users: bool = False
 
     # Skill copy directories
     skill_copies: list[Path] = field(default_factory=list)
@@ -119,8 +120,16 @@ def scan_removal_targets(server_name: str) -> RemovalPlan:
     if shared.exists():
         plan.agents_skill_dir = shared
 
-    # servers.yaml
+    # servers.yaml — try exact name, then fuzzy-match via safe_filename
     plan.servers_yaml_entry = server_exists(server_name)
+    if not plan.servers_yaml_entry:
+        from mcp2cli.installer.servers_writer import load_servers_yaml
+        all_servers = load_servers_yaml().get("servers", {})
+        for key in all_servers:
+            if safe_filename(key) == safe_filename(server_name):
+                plan.servers_yaml_entry = True
+                plan.server_name = key
+                break
 
     # Disabled sources in client configs
     for name, _, src in iter_client_servers():
@@ -140,7 +149,7 @@ def scan_removal_targets(server_name: str) -> RemovalPlan:
     if plan.servers_yaml_entry:
         from mcp2cli.installer.servers_writer import load_servers_yaml
         yaml_data = load_servers_yaml()
-        entry = yaml_data.get("servers", {}).get(server_name, {})
-        plan.package_info = detect_package_info(server_name, entry)
+        entry = yaml_data.get("servers", {}).get(plan.server_name, {})
+        plan.package_info = detect_package_info(plan.server_name, entry)
 
     return plan
