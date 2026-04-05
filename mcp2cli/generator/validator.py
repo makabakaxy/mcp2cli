@@ -10,7 +10,7 @@ import yaml
 from mcp2cli.cli.mapping import cli_path, cli_yaml_hash, extract_tools_from_yaml
 from mcp2cli.config.tool_store import load_tools
 from mcp2cli.constants import RESERVED_COMMANDS
-from mcp2cli.utils import skills_path
+from mcp2cli.utils import safe_filename, skills_path
 from mcp2cli.utils.file_ops import ensure_users_dir, parse_frontmatter, strip_frontmatter
 
 
@@ -163,7 +163,7 @@ def validate_skill(server_name: str, output_dir: Path | None = None) -> list[str
     else:
         if "name" not in fm:
             errors.append("Frontmatter missing 'name'")
-        elif fm["name"] != server_name:
+        elif safe_filename(fm["name"]) != safe_filename(server_name):
             errors.append(f"Frontmatter name '{fm['name']}' != server '{server_name}'")
         if not fm.get("description"):
             errors.append("Frontmatter missing or empty 'description'")
