@@ -1,4 +1,4 @@
-"""Preset push: validate, assemble, and publish via git SSH."""
+"""Preset push/export: validate, assemble, and publish preset bundles."""
 
 from __future__ import annotations
 
@@ -10,24 +10,25 @@ import click
 
 from mcp2cli.cli.mapping import cli_yaml_hash
 from mcp2cli.config.tool_store import load_tools
-from mcp2cli.constants import CLI_DIR, SKILLS_DIR, TOOLS_DIR
+from mcp2cli.constants import CLI_DIR, TOOLS_DIR
 from mcp2cli.generator.validator import validate_cli_yaml, validate_skill
 from mcp2cli.preset.models import Manifest
-from mcp2cli.utils import safe_filename
+from mcp2cli.utils import safe_filename, skills_path
 
 
-def push_preset(
+PrepareResult = tuple[str, list[tuple[str, Path]], Manifest, object]
+"""(resolved_version, file_pairs, manifest, tools_json)"""
+
+
+def prepare_preset(
     server_name: str,
     version: str | None = None,
-    yes: bool = False,
-) -> bool:
-    """Validate local files, assemble a preset bundle, and push via git SSH.
+) -> PrepareResult | None:
+    """Load, validate, and collect files for a preset bundle.
 
-    Returns True on success.
+    Returns (resolved_version, file_pairs, manifest, tools_json) on success,
+    or None on failure.
     """
-    from mcp2cli.preset.github import push_branch
-    from mcp2cli.preset.registry import _pr_url, _ssh_url, fetch_index
-
     # 1. Load tools.json
     tools_json = load_tools(server_name)
     if tools_json is None:
@@ -36,7 +37,7 @@ def push_preset(
             f"Run 'mcp2cli scan {server_name}' first.",
             err=True,
         )
-        return False
+        return None
 
     # 2. Resolve version
     preset_version = version or tools_json.version or tools_json.scanned_at[:10]
@@ -49,7 +50,7 @@ def push_preset(
         click.echo("  CLI YAML validation failed:", err=True)
         for e in cli_errors:
             click.echo(f"    ✗ {e}", err=True)
-        return False
+        return None
     click.echo("  ✓ cli.yaml")
 
     skill_errors = validate_skill(server_name)
@@ -58,7 +59,7 @@ def push_preset(
         click.echo("  Skill validation failed:", err=True)
         for e in hard_errors:
             click.echo(f"    ✗ {e}", err=True)
-        return False
+        return None
     click.echo("  ✓ SKILL.md")
 
     # 4. Collect files
@@ -74,6 +75,26 @@ def push_preset(
         generated_by="mcp2cli-push",
         files=[rel for rel, _ in file_pairs],
     )
+
+    return preset_version, file_pairs, manifest, tools_json
+
+
+def push_preset(
+    server_name: str,
+    version: str | None = None,
+    yes: bool = False,
+) -> bool:
+    """Validate local files, assemble a preset bundle, and push via git SSH.
+
+    Returns True on success.
+    """
+    from mcp2cli.preset.github import push_branch
+    from mcp2cli.preset.registry import _pr_url, _ssh_url, fetch_index
+
+    result = prepare_preset(server_name, version)
+    if result is None:
+        return False
+    preset_version, file_pairs, manifest, tools_json = result
 
     # 6. Build updated index.json
     index_data = _build_updated_index(server_name, preset_version, tools_json, fetch_index)
@@ -142,7 +163,7 @@ def _collect_files(server_name: str) -> list[tuple[str, Path]]:
     if cli_file.exists():
         pairs.append(("cli.yaml", cli_file))
 
-    skill_dir = SKILLS_DIR / server_name
+    skill_dir = skills_path(server_name)
     if skill_dir.exists():
         for f in sorted(skill_dir.rglob("*")):
             if not f.is_file():

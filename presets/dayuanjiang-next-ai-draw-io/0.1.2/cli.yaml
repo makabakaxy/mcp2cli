@@ -1,0 +1,38 @@
+server: dayuanjiang/next-ai-draw-io
+version: "0.1.2"
+generated_at: "2026-04-05T07:10:00Z"
+generated_by: ai
+
+server_aliases:
+  - next-ai-draw-io
+
+command_shortcuts: []
+
+commands:
+  session:
+    _description: "Diagram session management"
+    start:
+      _tool: start_session
+      _description: "Start a new diagram session and open browser for real-time preview"
+      _examples:
+        - "mcp2cli dayuanjiang/next-ai-draw-io session start"
+  diagram:
+    _description: "Diagram operations"
+    create:
+      _tool: create_new_diagram
+      _description: "Create a new diagram from mxGraphModel XML"
+      _examples:
+        - "mcp2cli dayuanjiang/next-ai-draw-io diagram create --xml '<mxGraphModel>...</mxGraphModel>'"
+    edit:
+      _tool: edit_diagram
+      _description: "Edit the current diagram by ID-based cell operations"
+    get:
+      _tool: get_diagram
+      _description: "Get the current diagram XML from browser"
+      _examples:
+        - "mcp2cli dayuanjiang/next-ai-draw-io diagram get"
+    download:
+      _tool: export_diagram
+      _description: "Export the current diagram to a file"
+      _examples:
+        - "mcp2cli dayuanjiang/next-ai-draw-io diagram download --path ./diagram.png --format png"

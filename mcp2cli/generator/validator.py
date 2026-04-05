@@ -9,7 +9,8 @@ import yaml
 
 from mcp2cli.cli.mapping import cli_path, cli_yaml_hash, extract_tools_from_yaml
 from mcp2cli.config.tool_store import load_tools
-from mcp2cli.constants import RESERVED_COMMANDS, SKILLS_DIR
+from mcp2cli.constants import RESERVED_COMMANDS
+from mcp2cli.utils import skills_path
 from mcp2cli.utils.file_ops import ensure_users_dir, parse_frontmatter, strip_frontmatter
 
 
@@ -147,7 +148,7 @@ def _collect_paths(node: dict, prefix: list[str]) -> list[list[str]]:
 def validate_skill(server_name: str, output_dir: Path | None = None) -> list[str]:
     """Validate skill files for a server. Returns list of error strings."""
     errors: list[str] = []
-    skill_dir = output_dir or (SKILLS_DIR / server_name)
+    skill_dir = output_dir or skills_path(server_name)
 
     skill_md = skill_dir / "SKILL.md"
     if not skill_md.exists():

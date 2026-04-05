@@ -9,7 +9,8 @@ from mcp2cli.cli.mapping import cli_path
 from mcp2cli.config.models import ConfigSource
 from mcp2cli.config.reader import iter_client_servers
 from mcp2cli.config.tool_store import tools_path
-from mcp2cli.constants import CLIENT_CONFIGS, SHARED_SKILLS_DIR, SKILLS_DIR
+from mcp2cli.constants import CLIENT_CONFIGS
+from mcp2cli.utils import safe_filename, shared_skills_path, skills_path
 from mcp2cli.installer.servers_writer import server_exists
 from mcp2cli.remover.package_purger import PackageInfo, detect_package_info
 
@@ -100,7 +101,7 @@ def scan_removal_targets(server_name: str) -> RemovalPlan:
     if cp.exists():
         plan.cli_yaml = cp
 
-    sd = SKILLS_DIR / server_name
+    sd = skills_path(server_name)
     if sd.exists() and sd.is_dir():
         plan.skills_dir = sd
         users_dir = sd / "users"
@@ -110,11 +111,11 @@ def scan_removal_targets(server_name: str) -> RemovalPlan:
 
     # Skill copy directories
     for client_name, info in CLIENT_CONFIGS.items():
-        skill_copy = info["skill_dir"] / server_name
+        skill_copy = info["skill_dir"] / safe_filename(server_name)
         if skill_copy.exists():
             plan.skill_copies.append(skill_copy)
 
-    shared = SHARED_SKILLS_DIR / server_name
+    shared = shared_skills_path(server_name)
     if shared.exists():
         plan.agents_skill_dir = shared
 

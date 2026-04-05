@@ -1,0 +1,110 @@
+{
+  "server": "dayuanjiang/next-ai-draw-io",
+  "version": "0.1.2",
+  "scanned_at": "2026-04-05T07:02:01.207292+00:00",
+  "tools": [
+    {
+      "name": "start_session",
+      "description": "Start a new diagram session and open the browser for real-time preview. Starts an embedded server and opens a browser window with draw.io. The browser will show diagram updates as they happen.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_new_diagram",
+      "description": "Create a NEW diagram from mxGraphModel XML. Use this when creating a diagram from scratch or replacing the current diagram entirely.\n\nCRITICAL: You MUST provide the 'xml' argument in EVERY call. Do NOT call this tool without xml.\n\nWhen to use this tool:\n- Creating a new diagram from scratch\n- Replacing the current diagram with a completely different one\n- Major structural changes that require regenerating the diagram\n\nWhen to use edit_diagram instead:\n- Small modifications to existing diagram\n- Adding/removing individual elements\n- Changing labels, colors, or positions\n\nXML FORMAT - Full mxGraphModel structure:\n<mxGraphModel>\n  <root>\n    <mxCell id=\"0\"/>\n    <mxCell id=\"1\" parent=\"0\"/>\n    <mxCell id=\"2\" value=\"Shape\" style=\"rounded=1;\" vertex=\"1\" parent=\"1\">\n      <mxGeometry x=\"100\" y=\"100\" width=\"120\" height=\"60\" as=\"geometry\"/>\n    </mxCell>\n  </root>\n</mxGraphModel>\n\nLAYOUT CONSTRAINTS:\n- Keep all elements within x=0-800, y=0-600 (single page viewport)\n- Start from margins (x=40, y=40), keep elements grouped closely\n- Use unique IDs starting from \"2\" (0 and 1 are reserved)\n- Set parent=\"1\" for top-level shapes\n- Space shapes 150-200px apart for clear edge routing\n\nEDGE ROUTING RULES:\n- Never let multiple edges share the same path - use different exitY/entryY values\n- For bidirectional connections (A↔B), use OPPOSITE sides\n- Always specify exitX, exitY, entryX, entryY explicitly in edge style\n- Route edges AROUND obstacles using waypoints (add 20-30px clearance)\n- Use natural connection points based on flow (not corners)\n\nCOMMON STYLES:\n- Shapes: rounded=1; fillColor=#hex; strokeColor=#hex\n- Edges: endArrow=classic; edgeStyle=orthogonalEdgeStyle; curved=1\n- Text: fontSize=14; fontStyle=1 (bold); align=center",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "xml": {
+            "type": "string",
+            "description": "REQUIRED: The complete mxGraphModel XML. Must always be provided."
+          }
+        },
+        "required": [
+          "xml"
+        ]
+      }
+    },
+    {
+      "name": "edit_diagram",
+      "description": "Edit the current diagram by ID-based operations (update/add/delete cells).\n\n⚠️ REQUIRED: You MUST call get_diagram BEFORE this tool!\nThis fetches the latest state from the browser including any manual user edits.\nSkipping get_diagram WILL cause user's changes to be LOST.\n\nWorkflow:\n1. Call get_diagram to see current cell IDs and structure\n2. Use the returned XML to construct your edit operations\n3. Call edit_diagram with your operations\n\nOperations:\n- add: Add a new cell. Provide cell_id (new unique id) and new_xml.\n- update: Replace an existing cell by its id. Provide cell_id and complete new_xml.\n- delete: Remove a cell by its id. Only cell_id is needed.\n\nFor add/update, new_xml must be a complete mxCell element including mxGeometry.\n\nExample - Add a rectangle:\n{\"operations\": [{\"operation\": \"add\", \"cell_id\": \"rect-1\", \"new_xml\": \"<mxCell id=\\\"rect-1\\\" value=\\\"Hello\\\" style=\\\"rounded=0;\\\" vertex=\\\"1\\\" parent=\\\"1\\\"><mxGeometry x=\\\"100\\\" y=\\\"100\\\" width=\\\"120\\\" height=\\\"60\\\" as=\\\"geometry\\\"/></mxCell>\"}]}\n\nExample - Update a cell:\n{\"operations\": [{\"operation\": \"update\", \"cell_id\": \"3\", \"new_xml\": \"<mxCell id=\\\"3\\\" value=\\\"New Label\\\" style=\\\"rounded=1;\\\" vertex=\\\"1\\\" parent=\\\"1\\\"><mxGeometry x=\\\"100\\\" y=\\\"100\\\" width=\\\"120\\\" height=\\\"60\\\" as=\\\"geometry\\\"/></mxCell>\"}]}\n\nExample - Delete a cell:\n{\"operations\": [{\"operation\": \"delete\", \"cell_id\": \"rect-1\"}]}",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "operation": {
+                  "type": "string",
+                  "enum": [
+                    "update",
+                    "add",
+                    "delete"
+                  ],
+                  "description": "Operation to perform: add, update, or delete"
+                },
+                "cell_id": {
+                  "type": "string",
+                  "description": "The id of the mxCell"
+                },
+                "new_xml": {
+                  "description": "Complete mxCell XML element (required for update/add)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "operation",
+                "cell_id"
+              ]
+            },
+            "description": "Array of operations to apply"
+          }
+        },
+        "required": [
+          "operations"
+        ]
+      }
+    },
+    {
+      "name": "get_diagram",
+      "description": "Get the current diagram XML (fetches latest from browser, including user's manual edits). Call this BEFORE edit_diagram if you need to update or delete existing elements, so you can see the current cell IDs and structure.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "export_diagram",
+      "description": "Export the current diagram to a file. Supports .drawio (XML), .png, and .svg formats. The format is auto-detected from the file extension, or can be specified explicitly.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path to save the diagram (e.g., ./diagram.drawio, ./diagram.png, ./diagram.svg)"
+          },
+          "format": {
+            "description": "Export format. If omitted, detected from file extension. Defaults to drawio.",
+            "type": "string",
+            "enum": [
+              "drawio",
+              "png",
+              "svg"
+            ]
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  ]
+}

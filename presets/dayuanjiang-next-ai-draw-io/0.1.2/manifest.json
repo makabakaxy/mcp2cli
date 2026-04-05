@@ -1,0 +1,15 @@
+{
+  "server": "dayuanjiang/next-ai-draw-io",
+  "server_version": "0.1.2",
+  "tool_count": 5,
+  "cli_hash": "61402301",
+  "generated_at": "2026-04-05T07:12:33.723639+00:00",
+  "generated_by": "mcp2cli-push",
+  "files": [
+    "tools.json",
+    "cli.yaml",
+    "skills/SKILL.md",
+    "skills/reference/diagram.md",
+    "skills/reference/session.md"
+  ]
+}

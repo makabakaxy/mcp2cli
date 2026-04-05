@@ -7,7 +7,8 @@ from pathlib import Path
 
 import click
 
-from mcp2cli.constants import CLIENT_CONFIGS, SHARED_SKILLS_DIR, SKILLS_DIR
+from mcp2cli.constants import CLIENT_CONFIGS
+from mcp2cli.utils import safe_filename, shared_skills_path, skills_path
 from mcp2cli.converter.config_disabler import disable_server
 
 
@@ -20,7 +21,7 @@ def skill_sync(
 
     Returns True on success.
     """
-    source_dir = SKILLS_DIR / server_name
+    source_dir = skills_path(server_name)
     if not source_dir.exists() or not (source_dir / "SKILL.md").exists():
         click.echo(
             f"Error: Skill files not found at {source_dir}\n"
@@ -33,8 +34,9 @@ def skill_sync(
     click.echo(f"🔗 Syncing skill for {server_name}...")
 
     # Copy to shared skills directory
-    _copy_skill(source_dir, SHARED_SKILLS_DIR / server_name)
-    click.echo(f"  {SHARED_SKILLS_DIR / server_name} ✓")
+    shared = shared_skills_path(server_name)
+    _copy_skill(source_dir, shared)
+    click.echo(f"  {shared} ✓")
 
     # Copy to each client skill directory
     for client in target_clients:
@@ -42,7 +44,7 @@ def skill_sync(
         if not info:
             continue
 
-        target = info["skill_dir"] / server_name
+        target = info["skill_dir"] / safe_filename(server_name)
         _copy_skill(source_dir, target)
         click.echo(f"  {target} ✓")
 

@@ -8,7 +8,7 @@ Convert MCP servers into CLI commands and compact AI agent skills.
 
 ## Why
 
-Take [zereight/gitlab-mcp](https://github.com/zereight/gitlab-mcp) — it exposes **122 tools** across 14 categories (merge requests, issues, pipelines, wikis, etc.). Every tool schema gets injected into your AI conversation context on every request. We measured this directly against the Claude API:
+For example, install [zereight/gitlab-mcp](https://github.com/zereight/gitlab-mcp) — it exposes **122 tools** across 14 categories (merge requests, issues, pipelines, wikis, etc.). Every tool schema gets injected into your AI conversation context on every request. We measured this directly against the Claude API:
 
 | Per-request input tokens | Before (raw MCP) | After (mcp2cli) |
 |---|---|---|
@@ -28,9 +28,10 @@ Beyond token savings, some projects maintain both a CLI and an MCP server in par
 pip install mcp2cli
 ```
 
-If you already have an MCP server configured in Claude, Cursor, or Codex — one command is all you need:
+If you already have an MCP server configured in Claude, Cursor, or Codex:
 
 ```bash
+mcp2cli list              # See which MCP servers are available
 mcp2cli convert gitlab-mcp
 ```
 
@@ -55,6 +56,8 @@ That's it. Your MCP server is now a CLI, and the compressed skill files are sync
 1. **Extract** — Reads your MCP server config from Claude (`~/.claude.json`) / Cursor (`~/.cursor/mcp.json`) / Codex (`~/.codex/config.toml`)
 2. **Generate** — Connects to the MCP server, discovers all tools, and uses AI to generate a CLI command tree (`cli.yaml`) and a compressed skill file (`SKILL.md`)
 3. **Sync** — Copies skill files to your AI clients and disables the raw MCP server
+
+Each skill directory contains a `users/` subdirectory where you can add your own notes and workflows. This directory is never overwritten by `mcp2cli`.
 
 At runtime, the generated CLI resolves commands to MCP tool calls through a lightweight daemon:
 
@@ -152,6 +155,7 @@ mcp2cli remove gitlab-mcp
 | `skill unsync <server>` | Remove synced skills and re-enable MCP server |
 | `preset list [server]` | Browse available presets (local + remote) |
 | `preset pull <name[@ver]>` | Download a preset, skip AI generation |
+| `preset export <server>` | Export a preset bundle to a local directory |
 | `preset push <server>` | Push local preset to community registry |
 | `validate <server>` | Validate CLI mapping and skill files |
 

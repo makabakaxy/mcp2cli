@@ -10,9 +10,10 @@ import yaml
 
 from mcp2cli.cli.mapping import cli_path, cli_yaml_hash
 from mcp2cli.config.tool_store import load_tools, tools_path
-from mcp2cli.constants import SKILLS_DIR, TEMPLATES_DIR
+from mcp2cli.constants import TEMPLATES_DIR
 from mcp2cli.generator.llm_backend import get_backend
 from mcp2cli.generator.validator import validate_skill
+from mcp2cli.utils import skills_path
 from mcp2cli.utils.file_ops import parse_frontmatter
 
 MAX_RETRIES = 1
@@ -45,7 +46,7 @@ def generate_skill(
         )
         return False
 
-    out_dir = output_dir or (SKILLS_DIR / server_name)
+    out_dir = output_dir or skills_path(server_name)
     skill_md = out_dir / "SKILL.md"
 
     # Compute source_cli_hash

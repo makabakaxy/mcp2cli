@@ -141,8 +141,8 @@ def scan(server_name: str):
 def validate(server_name: str):
     """Validate CLI mapping and/or skill files for a server."""
     from mcp2cli.cli.mapping import cli_path
-    from mcp2cli.constants import SKILLS_DIR
     from mcp2cli.generator.validator import validate_cli_yaml, validate_skill
+    from mcp2cli.utils import skills_path
 
     has_errors = False
 
@@ -157,7 +157,7 @@ def validate(server_name: str):
         else:
             click.echo("  All CLI checks passed ✓")
 
-    sd = SKILLS_DIR / server_name
+    sd = skills_path(server_name)
     if sd.exists():
         click.echo(f"Validating {sd}...")
         errors = validate_skill(server_name)
@@ -319,9 +319,10 @@ def skill_sync_cmd(server_name: str | None, targets: str | None, skip_disable: b
 @click.option("--skip-re-enable", is_flag=True, help="Don't re-enable MCP in client configs")
 def skill_unsync_cmd(server_name: str | None, targets: str | None, skip_re_enable: bool):
     """Remove skill files from AI client directories and re-enable MCP."""
-    from mcp2cli.constants import CLIENT_CONFIGS, SHARED_SKILLS_DIR
+    from mcp2cli.constants import CLIENT_CONFIGS
     from mcp2cli.remover.cleaner import unsync_skills
     from mcp2cli.remover.config_re_enabler import re_enable_server
+    from mcp2cli.utils import safe_filename, shared_skills_path
 
     target_clients = targets.split(",") if targets else list(CLIENT_CONFIGS.keys())
 
@@ -331,11 +332,11 @@ def skill_unsync_cmd(server_name: str | None, targets: str | None, skip_re_enabl
             info = CLIENT_CONFIGS.get(client)
             if not info:
                 continue
-            skill_dir = info["skill_dir"] / sname
+            skill_dir = info["skill_dir"] / safe_filename(sname)
             if skill_dir.exists():
                 copies.append(skill_dir)
 
-        agents = SHARED_SKILLS_DIR / sname
+        agents = shared_skills_path(sname)
         agents_dir = agents if agents.exists() else None
 
         unsync_skills(sname, copies, agents_dir)
@@ -844,6 +845,24 @@ def preset_pull_cmd(preset_spec: str, do_sync: bool, force: bool, dry_run: bool)
         click.echo(f"\nNext: run 'mcp2cli skill sync {server_name}' to copy to AI clients.")
 
 
+@preset_group.command("export")
+@click.argument("server_name")
+@click.option("--version", "preset_version", default=None, help="Override version (default: from tools.json)")
+@click.option("-o", "--output", "output_dir", default=".", help="Output directory (default: current directory)")
+@click.option("--yes", is_flag=True, help="Skip confirmation")
+def preset_export_cmd(server_name: str, preset_version: str | None, output_dir: str, yes: bool):
+    """Export a preset bundle to a local directory.
+
+    Validates local files and writes the preset bundle (tools.json, cli.yaml,
+    skills/, manifest.json) to <output>/<server>/<version>/.
+    """
+    from mcp2cli.preset.exporter import export_preset
+
+    ok = export_preset(server_name, version=preset_version, output_dir=output_dir, yes=yes)
+    if not ok:
+        raise SystemExit(1)
+
+
 @preset_group.command("push")
 @click.argument("server_name")
 @click.option("--version", "preset_version", default=None, help="Override version (default: from tools.json)")
@@ -861,6 +880,10 @@ def preset_push_cmd(server_name: str, preset_version: str | None, yes: bool):
     ok = push_preset(server_name, version=preset_version, yes=yes)
     if not ok:
         raise SystemExit(1)
+
+
+# Alias: export = preset export
+cli.add_command(preset_export_cmd, "export")
 
 
 if __name__ == "__main__":

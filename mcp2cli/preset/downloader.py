@@ -10,10 +10,10 @@ from urllib.error import URLError
 
 import click
 
-from mcp2cli.constants import CLI_DIR, DATA_DIR, SKILLS_DIR, TOOLS_DIR
+from mcp2cli.constants import CLI_DIR, DATA_DIR, TOOLS_DIR
 from mcp2cli.preset.models import Manifest
 from mcp2cli.preset.registry import _raw_base, find_preset
-from mcp2cli.utils import safe_filename
+from mcp2cli.utils import safe_filename, skills_path
 from mcp2cli.utils.file_ops import ensure_users_dir
 
 FILE_TIMEOUT = 10
@@ -99,7 +99,7 @@ def pull_preset(
         downloaded.append(target)
         click.echo(f"  ✓ {rel_path}")
 
-    ensure_users_dir(SKILLS_DIR / server_name)
+    ensure_users_dir(skills_path(server_name))
 
     click.echo(f"Done! Files written to {DATA_DIR}/")
     return True
@@ -144,7 +144,7 @@ def _map_target_path(server_name: str, rel_path: str) -> Path:
     if rel_path == "cli.yaml":
         return CLI_DIR / f"{safe_filename(server_name)}.yaml"
     if rel_path.startswith("skills/"):
-        return SKILLS_DIR / server_name / rel_path[len("skills/"):]
+        return skills_path(server_name) / rel_path[len("skills/"):]
     return DATA_DIR / server_name / rel_path
 
 

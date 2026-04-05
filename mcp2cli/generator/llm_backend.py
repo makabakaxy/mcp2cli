@@ -181,6 +181,7 @@ class ClaudeCLIBackend(LLMBackend):
             "--model", self.model,
             "--dangerously-skip-permissions",
             "--max-turns", "1",
+            "--no-session-persistence",
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
