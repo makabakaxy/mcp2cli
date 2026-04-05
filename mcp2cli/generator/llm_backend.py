@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from mcp2cli.constants import SESSIONS_DIR, SESSION_EXPIRY_HOURS
+from mcp2cli.utils import safe_filename
 
 
 @dataclass
@@ -39,7 +40,6 @@ class LLMBackend(ABC):
         server_name: str = "",
         show_progress: bool = False,
         progress_message: str = "",
-        allowed_tools: list[str] | None = None,
     ) -> LLMResult:
         ...
 
@@ -128,7 +128,6 @@ class ClaudeCLIBackend(LLMBackend):
         server_name: str = "",
         show_progress: bool = False,
         progress_message: str = "",
-        allowed_tools: list[str] | None = None,
     ) -> LLMResult:
         cmd = [
             self.command, "-p", prompt,
@@ -136,8 +135,6 @@ class ClaudeCLIBackend(LLMBackend):
             "--model", self.model,
             "--dangerously-skip-permissions",
         ]
-        if allowed_tools:
-            cmd += ["--allowedTools", ",".join(allowed_tools)]
 
         if show_progress:
             result = self._run_with_progress(cmd, progress_message or "Processing...")
@@ -337,7 +334,6 @@ class ClaudeCLIBackend(LLMBackend):
     # ------------------------------------------------------------------
 
     def _save_session(self, session_id: str, command_name: str, server_name: str) -> None:
-        SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
         now = datetime.now(timezone.utc).isoformat()
         sf = SessionFile(
             session_id=session_id,
@@ -348,12 +344,14 @@ class ClaudeCLIBackend(LLMBackend):
             last_used_at=now,
             status="in_progress",
         )
-        self._session_path(command_name, server_name).write_text(
+        SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+        path = self._session_path(command_name, server_name)
+        path.write_text(
             json.dumps(sf.to_dict(), indent=2)
         )
 
     def _session_path(self, command_name: str, server_name: str) -> Path:
-        safe_name = f"{command_name.replace(' ', '-')}-{server_name}"
+        safe_name = f"{command_name.replace(' ', '-')}-{safe_filename(server_name)}"
         return SESSIONS_DIR / f"{safe_name}.session.json"
 
 

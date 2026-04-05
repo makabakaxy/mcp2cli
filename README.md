@@ -1,4 +1,8 @@
+<!-- Keywords: mcp2cli mcp2skill mcp-to-skill mcp-to-cli mcpcli mcp to skill mcp to cli mcp 2 cli mcp 2 skill -->
+
 # mcp2cli
+
+> Also known as: **mcp2skill** · **mcp-to-cli** · **mcp-to-skill** · **mcpcli**
 
 Convert MCP servers into CLI commands and compact AI agent skills.
 
@@ -34,53 +38,43 @@ That's it. Your MCP server is now a CLI, and the compressed skill files are sync
 
 ## How It Works
 
-```
-                        mcp2cli convert
-                              |
-          +-------------------+-------------------+
-          |                   |                   |
-     1. Extract          2. AI Generate       3. Sync
-   server config       CLI tree + skill     to AI clients
-  from Claude/Cursor    from MCP tools     Claude/Cursor/Codex
-          |                   |                   |
-          v                   v                   v
-     servers.yaml        cli.yaml +          ~/.claude/skills/
-                         SKILL.md            ~/.cursor/skills/
-
-                     --- at runtime ---
-
-    mcp2cli gitlab mr list --project-id 123
-          |
-          v
-    +-----------+       MCP protocol       +------------+
-    |  mcp2cli  | --------------------->   | MCP Server |
-    |  daemon   | <---------------------   | (gitlab)   |
-    +-----------+       JSON result        +------------+
-```
-
-The daemon starts automatically on first use and stops when idle. You don't need to manage it.
-
-## What `convert` Does
+`mcp2cli convert gitlab-mcp` runs a 3-phase pipeline:
 
 ```
-mcp2cli convert gitlab-mcp
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│  1. Extract  │─────>│  2. Generate │─────>│   3. Sync    │
+│              │      │              │      │              │
+│  Read config │      │ AI-generate  │      │ Copy skills, │
+│  from Claude,│      │ CLI + skill  │      │ disable MCP  │
+│  Cursor,Codex│      │              │      │              │
+└──────┬───────┘      └──────┬───────┘      └──────┬───────┘
+       v                     v                     v
+ mcp_servers.json    cli.yaml + SKILL.md    ~/.claude/skills/
 ```
 
-1. Reads your MCP server config from Claude (`~/.claude.json`) / Cursor (`~/.cursor/mcp.json`) / Codex (`~/.codex/config.toml`)
-2. Connects to the MCP server, discovers all tools, and uses AI to generate:
-   ```
-   ~/.agents/mcp2cli/gitlab-mcp/
-   ├── cli.yaml    # CLI mapping — tool → command tree
-   └── SKILL.md    # Skill file — compressed cheat-sheet for AI agents
-   ```
-3. Syncs skill files to your AI clients and disables the raw MCP server:
-   ```
-   ~/.claude/skills/gitlab-mcp.md
-   ~/.cursor/skills/gitlab-mcp.md
-   ~/.codex/skills/gitlab-mcp.md
-   ```
+1. **Extract** — Reads your MCP server config from Claude (`~/.claude.json`) / Cursor (`~/.cursor/mcp.json`) / Codex (`~/.codex/config.toml`)
+2. **Generate** — Connects to the MCP server, discovers all tools, and uses AI to generate a CLI command tree (`cli.yaml`) and a compressed skill file (`SKILL.md`)
+3. **Sync** — Copies skill files to your AI clients and disables the raw MCP server
 
-## Presets
+At runtime, the generated CLI resolves commands to MCP tool calls through a lightweight daemon:
+
+```
+mcp2cli gitlab mr list --project-id 123
+        │
+        │  resolve via cli.yaml
+        v
+  tool: gitlab_list_merge_requests(project_id=123)
+        │
+        v
+  ┌─────────┐     MCP protocol     ┌────────────┐
+  │ mcp2cli │ ──────────────────>  │ MCP Server │
+  │ daemon  │ <──────────────────  │ (gitlab)   │
+  └─────────┘     JSON result      └────────────┘
+```
+
+The daemon starts automatically on first use and stops when idle.
+
+## Presets — Pre-built Skills, Download in Seconds
 
 Don't want to wait for AI generation (~2-3 min)? Use **presets** — pre-built CLI mappings + skill files shared by the community. Downloads in ~10 seconds.
 
@@ -91,7 +85,20 @@ mcp2cli preset pull mcp-atlassian@1.2.3   # Pin a specific version
 mcp2cli preset push gitlab-mcp            # Share your result with others
 ```
 
-Presets are also checked automatically during `convert` and `install` — if one exists, you'll be prompted to use it instead of waiting for AI generation.
+During `convert` and `install`, presets are checked automatically — if one exists, you can skip AI generation entirely:
+
+```
+mcp2cli convert/install
+        |
+   preset-check ─── found? ─── yes ──→ download preset (~10s)
+        |                                      |
+        no                                     |
+        |                                      |
+   scan → generate cli → generate skill        |
+        (~2-3 min)                             |
+        |                                      |
+        └──────────────→ skill sync ←──────────┘
+```
 
 Custom registry for private/team use:
 
@@ -99,10 +106,18 @@ Custom registry for private/team use:
 mcp2cli preset registry set https://github.com/your-org/mcp2cli-presets
 ```
 
+## Install — Add New MCP Servers
+
+`convert` works with servers already configured in your AI clients. For MCP servers you haven't set up yet, use `install` — it searches the internet for installation info, prompts for env vars, then runs the full conversion pipeline:
+
+```bash
+mcp2cli install mcp-atlassian
+```
+
 ## Usage Examples
 
 ```bash
-# List all configured MCP servers
+# List all configured local MCP servers
 mcp2cli list
 
 # Convert a server (auto-detects config from all clients)

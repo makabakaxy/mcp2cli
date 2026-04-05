@@ -8,10 +8,11 @@ from pathlib import Path
 import yaml
 
 from mcp2cli.constants import CLI_DIR
+from mcp2cli.utils import safe_filename
 
 
 def cli_path(server_name: str) -> Path:
-    return CLI_DIR / f"{server_name}.yaml"
+    return CLI_DIR / f"{safe_filename(server_name)}.yaml"
 
 
 def load_cli_yaml(server_name: str) -> dict | None:

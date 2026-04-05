@@ -13,6 +13,7 @@ from mcp2cli.config.tool_store import load_tools
 from mcp2cli.constants import CLI_DIR, SKILLS_DIR, TOOLS_DIR
 from mcp2cli.generator.validator import validate_cli_yaml, validate_skill
 from mcp2cli.preset.models import Manifest
+from mcp2cli.utils import safe_filename
 
 
 def push_preset(
@@ -133,11 +134,11 @@ def _collect_files(server_name: str) -> list[tuple[str, Path]]:
     """
     pairs: list[tuple[str, Path]] = []
 
-    tools_file = TOOLS_DIR / f"{server_name}.json"
+    tools_file = TOOLS_DIR / f"{safe_filename(server_name)}.json"
     if tools_file.exists():
         pairs.append(("tools.json", tools_file))
 
-    cli_file = CLI_DIR / f"{server_name}.yaml"
+    cli_file = CLI_DIR / f"{safe_filename(server_name)}.yaml"
     if cli_file.exists():
         pairs.append(("cli.yaml", cli_file))
 

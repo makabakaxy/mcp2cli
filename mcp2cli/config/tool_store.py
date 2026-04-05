@@ -7,10 +7,11 @@ from pathlib import Path
 
 from mcp2cli.config.models import ToolsJSON
 from mcp2cli.constants import TOOLS_DIR
+from mcp2cli.utils import safe_filename
 
 
 def tools_path(server_name: str) -> Path:
-    return TOOLS_DIR / f"{server_name}.json"
+    return TOOLS_DIR / f"{safe_filename(server_name)}.json"
 
 
 def load_tools(server_name: str) -> ToolsJSON | None:

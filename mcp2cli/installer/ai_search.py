@@ -9,18 +9,18 @@ import click
 from mcp2cli.config.models import AISearchCandidate, AISearchResult
 from mcp2cli.generator.llm_backend import get_backend
 
-INSTALL_PROMPT_TEMPLATE = """你是 MCP server 安装助手。用户需要安装名为 "{server_name}" 的 MCP server。
+INSTALL_PROMPT_TEMPLATE = """You are an MCP server installation assistant. The user wants to install an MCP server named "{server_name}".
 
-请通过搜索互联网，找到最相关的 MCP server（最多 3 个候选），按推荐度从高到低排列，然后输出一个 JSON 对象。
+Search the internet to find the most relevant MCP server (up to 3 candidates), ranked by recommendation, then output a JSON object.
 
-搜索策略：
-0. 必须使用 WebSearch 工具搜索，不要使用浏览器工具
-1. 搜索 "{server_name} MCP server" 或 "{server_name} model context protocol"
-2. 查看 GitHub 仓库，获取 star 数量、是否为官方仓库、README 中的 MCP 配置示例
-3. 查看 npm / PyPI 包页面，确认包名和安装方式
-4. 优先推荐：官方仓库 > star 数量多 > 维护活跃
+Search strategy:
+0. You MUST use the WebSearch tool; do not use browser tools
+1. Search for "{server_name} MCP server" or "{server_name} model context protocol"
+2. Check GitHub repos for star count, whether it is an official repo, and MCP config examples in the README
+3. Check npm / PyPI package pages to confirm the package name and installation method
+4. Prefer: official repo > high star count > actively maintained
 
-输出格式（严格 JSON）：
+Output format (strict JSON):
 
 ```json
 {{
@@ -49,16 +49,16 @@ INSTALL_PROMPT_TEMPLATE = """你是 MCP server 安装助手。用户需要安装
 }}
 ```
 
-字段说明：
-- `candidates`: 候选列表，按推荐度排序，最多 3 个；若只找到 1 个也放入数组
-- `github_stars`: GitHub star 数，格式如 "8.2k" 或 "430"，找不到填 ""
-- `is_official`: 是否为官方/原作者发布的仓库
-- `description`: 简短描述（英文，一句话）
-- `command`: 启动命令（常见: uvx, npx, node, python）
-- `env.required`: 是否必须提供
-- `env.sensitive`: 是否为敏感信息（如 API Token）
+Field notes:
+- `candidates`: list of candidates sorted by recommendation, up to 3; use an array even if only one is found
+- `github_stars`: GitHub star count formatted as "8.2k" or "430"; use "" if not found
+- `is_official`: whether the repo is published by the original author / official maintainer
+- `description`: short one-sentence English description
+- `command`: launch command (common values: uvx, npx, node, python)
+- `env.required`: whether the env var must be provided
+- `env.sensitive`: whether the value is sensitive (e.g. an API token)
 
-如果找不到该 MCP server，返回：
+If the MCP server cannot be found, return:
 ```json
 {{
   "found": false,
@@ -67,10 +67,10 @@ INSTALL_PROMPT_TEMPLATE = """你是 MCP server 安装助手。用户需要安装
 }}
 ```
 
-注意：
-- 只输出 JSON，不要输出任何其他内容
-- 优先使用官方文档中的配置格式
-- command 优先使用 uvx (Python) 或 npx (Node.js) 等免安装运行器"""
+Important:
+- Output JSON only — no other text
+- Prefer the configuration format shown in the official documentation
+- For the command field, prefer zero-install runners such as uvx (Python) or npx (Node.js)"""
 
 
 def ai_search_server(server_name: str) -> AISearchResult | None:
@@ -89,7 +89,6 @@ def ai_search_server(server_name: str) -> AISearchResult | None:
         server_name=server_name,
         show_progress=True,
         progress_message=f"Searching for {server_name}...",
-        allowed_tools=["WebSearch"],
     )
 
     if result.is_error:
@@ -105,7 +104,7 @@ def ai_search_server(server_name: str) -> AISearchResult | None:
             click.echo("  Retrying AI search (invalid JSON)...")
             retry_result = backend.resume(
                 result.session_id,
-                "你的上一次输出不是合法的 JSON。请只输出 JSON 对象，不要输出任何其他文字。",
+                "Your previous output was not valid JSON. Please output only a JSON object with no other text.",
             )
             if not retry_result.is_error:
                 parsed = _extract_json(retry_result.result.strip())
