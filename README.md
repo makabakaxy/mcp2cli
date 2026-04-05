@@ -25,7 +25,7 @@ Beyond token savings, some projects maintain both a CLI and an MCP server in par
 ## Quick Start
 
 ```bash
-pip install mcp2cli
+pip install mcp-to-cli
 ```
 
 If you already have an MCP server configured in Claude, Cursor, or Codex:

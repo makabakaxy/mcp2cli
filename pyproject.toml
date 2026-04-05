@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mcp2skill"
+name = "mcp-to-cli"
 version = "0.1.0"
 description = "Convert MCP server tools into hierarchical CLI commands and agent Skills"
 readme = "README.md"
