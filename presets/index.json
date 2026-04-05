@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated_at": "2026-04-05T08:13:26.475449+00:00",
+  "updated_at": "2026-04-05T10:57:50.052395+00:00",
   "presets": [
     {
       "server": "dayuanjiang-next-ai-draw-io",
@@ -21,6 +21,16 @@
       "description": "Manage JIRA issues, sprints, boards, and Confluence pages via CLI. Use when user needs to create/search/update JIRA tickets, manage sprints, or edit Confluence pages.",
       "updated_at": "2026-04-05T06:27:34.288105+00:00",
       "tool_count": 72
+    },
+    {
+      "server": "zereight/gitlab-mcp",
+      "latest": "2.0.35",
+      "versions": [
+        "2.0.35"
+      ],
+      "description": "",
+      "updated_at": "2026-04-05T10:57:50.052395+00:00",
+      "tool_count": 122
     }
   ]
 }

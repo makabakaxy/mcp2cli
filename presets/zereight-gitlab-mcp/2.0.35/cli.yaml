@@ -1,0 +1,461 @@
+server: zereight/gitlab-mcp
+version: "2.0.35"
+generated_at: "2026-04-05T00:00:00Z"
+generated_by: ai
+
+server_aliases:
+  - gitlab
+
+command_shortcuts: []
+
+commands:
+  mr:
+    _description: "Merge request operations"
+    get:
+      _tool: get_merge_request
+      _description: "Get details of a merge request"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp mr get --project-id my-group/my-repo --merge-request-iid 42"
+    list:
+      _tool: list_merge_requests
+      _description: "List merge requests"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp mr list --project-id my-group/my-repo"
+    create:
+      _tool: create_merge_request
+      _description: "Create a new merge request"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp mr create --title 'Fix bug' --source-branch feature/fix --target-branch main"
+    update:
+      _tool: update_merge_request
+      _description: "Update a merge request"
+    merge:
+      _tool: merge_merge_request
+      _description: "Merge a merge request"
+    approval:
+      _description: "Approval operations"
+      get:
+        _tool: get_merge_request_approval_state
+        _description: "Get approval state of a merge request"
+      approve:
+        _tool: approve_merge_request
+        _description: "Approve a merge request"
+      unapprove:
+        _tool: unapprove_merge_request
+        _description: "Unapprove a previously approved merge request"
+    conflict:
+      _description: "Conflict operations"
+      get:
+        _tool: get_merge_request_conflicts
+        _description: "Get conflicts of a merge request"
+    diff:
+      _description: "Diff operations"
+      get:
+        _tool: get_merge_request_diffs
+        _description: "Get changes/diffs of a merge request"
+      list:
+        _tool: list_merge_request_diffs
+        _description: "List merge request diffs with pagination"
+      changed-files:
+        _tool: list_merge_request_changed_files
+        _description: "List changed file paths in a merge request"
+      file:
+        _tool: get_merge_request_file_diff
+        _description: "Get diffs for one or more specific files in a merge request"
+    version:
+      _description: "Version operations"
+      list:
+        _tool: list_merge_request_versions
+        _description: "List all versions of a merge request"
+      get:
+        _tool: get_merge_request_version
+        _description: "Get a specific version of a merge request"
+    note:
+      _description: "Note operations"
+      list:
+        _tool: get_merge_request_notes
+        _description: "List notes for a merge request"
+      get:
+        _tool: get_merge_request_note
+        _description: "Get a specific note for a merge request"
+      create:
+        _tool: create_merge_request_note
+        _description: "Add a new note to a merge request"
+      update:
+        _tool: update_merge_request_note
+        _description: "Modify an existing merge request note"
+      delete:
+        _tool: delete_merge_request_note
+        _description: "Delete an existing merge request note"
+    thread:
+      _description: "Thread/discussion operations"
+      list:
+        _tool: mr_discussions
+        _description: "List discussion items for a merge request"
+      create:
+        _tool: create_merge_request_thread
+        _description: "Create a new thread on a merge request"
+      resolve:
+        _tool: resolve_merge_request_thread
+        _description: "Resolve a thread on a merge request"
+      note:
+        _description: "Discussion note operations"
+        create:
+          _tool: create_merge_request_discussion_note
+          _description: "Add a new note to an existing merge request thread"
+        update:
+          _tool: update_merge_request_discussion_note
+          _description: "Update a discussion note on a merge request"
+        delete:
+          _tool: delete_merge_request_discussion_note
+          _description: "Delete a discussion note on a merge request"
+    draft-note:
+      _description: "Draft note operations"
+      list:
+        _tool: list_draft_notes
+        _description: "List draft notes for a merge request"
+      get:
+        _tool: get_draft_note
+        _description: "Get a single draft note from a merge request"
+      create:
+        _tool: create_draft_note
+        _description: "Create a draft note for a merge request"
+      update:
+        _tool: update_draft_note
+        _description: "Update an existing draft note"
+      delete:
+        _tool: delete_draft_note
+        _description: "Delete a draft note"
+      publish:
+        _tool: publish_draft_note
+        _description: "Publish a single draft note"
+      bulk-publish:
+        _tool: bulk_publish_draft_notes
+        _description: "Publish all draft notes for a merge request"
+  issue:
+    _description: "Issue operations"
+    list:
+      _tool: list_issues
+      _description: "List issues"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp issue list --project-id my-group/my-repo"
+    my:
+      _tool: my_issues
+      _description: "List issues assigned to the authenticated user"
+    get:
+      _tool: get_issue
+      _description: "Get details of a specific issue"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp issue get --project-id my-group/my-repo --issue-iid 10"
+    create:
+      _tool: create_issue
+      _description: "Create a new issue"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp issue create --title 'Fix memory leak' --project-id my-group/my-repo"
+    update:
+      _tool: update_issue
+      _description: "Update an issue"
+    delete:
+      _tool: delete_issue
+      _description: "Delete an issue"
+    note:
+      _description: "Note operations"
+      create:
+        _tool: create_issue_note
+        _description: "Add a new note to an issue"
+      update:
+        _tool: update_issue_note
+        _description: "Modify an existing issue note"
+    discussion:
+      _description: "Discussion operations"
+      list:
+        _tool: list_issue_discussions
+        _description: "List discussions for an issue"
+    link:
+      _description: "Issue link operations"
+      list:
+        _tool: list_issue_links
+        _description: "List all links for an issue"
+      get:
+        _tool: get_issue_link
+        _description: "Get a specific issue link"
+      create:
+        _tool: create_issue_link
+        _description: "Create a link between two issues"
+      delete:
+        _tool: delete_issue_link
+        _description: "Delete an issue link"
+  repo:
+    _description: "Repository/project operations"
+    search:
+      _tool: search_repositories
+      _description: "Search for GitLab projects"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp repo search --search my-project"
+    list:
+      _tool: list_projects
+      _description: "List projects accessible by the current user"
+    get:
+      _tool: get_project
+      _description: "Get details of a specific project"
+    create:
+      _tool: create_repository
+      _description: "Create a new GitLab project"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp repo create --name my-new-repo --visibility private"
+    fork:
+      _tool: fork_repository
+      _description: "Fork a GitLab project to your account or namespace"
+    tree:
+      _tool: get_repository_tree
+      _description: "Get the repository tree (files and directories)"
+    member:
+      _description: "Project member operations"
+      list:
+        _tool: list_project_members
+        _description: "List members of a project"
+    file:
+      _description: "File operations"
+      get:
+        _tool: get_file_contents
+        _description: "Get contents of a file or directory"
+      update:
+        _tool: create_or_update_file
+        _description: "Create or update a single file"
+      push:
+        _tool: push_files
+        _description: "Push multiple files in a single commit"
+  branch:
+    _description: "Branch operations"
+    create:
+      _tool: create_branch
+      _description: "Create a new branch"
+    diffs:
+      _tool: get_branch_diffs
+      _description: "Get changes/diffs between two branches or commits"
+  pipeline:
+    _description: "Pipeline/CI operations"
+    list:
+      _tool: list_pipelines
+      _description: "List pipelines in a project"
+      _examples:
+        - "mcp2cli zereight/gitlab-mcp pipeline list --project-id my-group/my-repo"
+    get:
+      _tool: get_pipeline
+      _description: "Get details of a specific pipeline"
+    create:
+      _tool: create_pipeline
+      _description: "Create a new pipeline for a branch or tag"
+    retry:
+      _tool: retry_pipeline
+      _description: "Retry a failed or canceled pipeline"
+    cancel:
+      _tool: cancel_pipeline
+      _description: "Cancel a running pipeline"
+    job:
+      _description: "Pipeline job operations"
+      list:
+        _tool: list_pipeline_jobs
+        _description: "List all jobs in a pipeline"
+      trigger-list:
+        _tool: list_pipeline_trigger_jobs
+        _description: "List all trigger jobs (bridges) in a pipeline"
+      get:
+        _tool: get_pipeline_job
+        _description: "Get details of a pipeline job"
+      output:
+        _tool: get_pipeline_job_output
+        _description: "Get the output/trace of a pipeline job"
+      play:
+        _tool: play_pipeline_job
+        _description: "Run a manual pipeline job"
+      retry:
+        _tool: retry_pipeline_job
+        _description: "Retry a failed or canceled pipeline job"
+      cancel:
+        _tool: cancel_pipeline_job
+        _description: "Cancel a running pipeline job"
+    artifact:
+      _description: "Job artifact operations"
+      list:
+        _tool: list_job_artifacts
+        _description: "List artifact files in a job's artifacts archive"
+      download:
+        _tool: download_job_artifacts
+        _description: "Download the entire artifact archive for a job"
+      get-file:
+        _tool: get_job_artifact_file
+        _description: "Get the content of a single file from a job's artifacts"
+  deployment:
+    _description: "Deployment operations"
+    list:
+      _tool: list_deployments
+      _description: "List deployments in a project"
+    get:
+      _tool: get_deployment
+      _description: "Get details of a specific deployment"
+  environment:
+    _description: "Environment operations"
+    list:
+      _tool: list_environments
+      _description: "List environments in a project"
+    get:
+      _tool: get_environment
+      _description: "Get details of a specific environment"
+  milestone:
+    _description: "Milestone operations"
+    list:
+      _tool: list_milestones
+      _description: "List milestones in a project"
+    get:
+      _tool: get_milestone
+      _description: "Get details of a specific milestone"
+    create:
+      _tool: create_milestone
+      _description: "Create a new milestone"
+    update:
+      _tool: edit_milestone
+      _description: "Edit an existing milestone"
+    delete:
+      _tool: delete_milestone
+      _description: "Delete a milestone"
+    promote:
+      _tool: promote_milestone
+      _description: "Promote a milestone to the next stage"
+    burndown:
+      _tool: get_milestone_burndown_events
+      _description: "Get burndown events for a milestone"
+    issues:
+      _tool: get_milestone_issue
+      _description: "Get issues associated with a milestone"
+    merge-requests:
+      _tool: get_milestone_merge_requests
+      _description: "Get merge requests associated with a milestone"
+  label:
+    _description: "Label operations"
+    list:
+      _tool: list_labels
+      _description: "List labels for a project"
+    get:
+      _tool: get_label
+      _description: "Get a single label from a project"
+    create:
+      _tool: create_label
+      _description: "Create a new label in a project"
+    update:
+      _tool: update_label
+      _description: "Update an existing label"
+    delete:
+      _tool: delete_label
+      _description: "Delete a label from a project"
+  wiki:
+    _description: "Wiki operations"
+    list:
+      _tool: list_wiki_pages
+      _description: "List wiki pages in a project"
+    get:
+      _tool: get_wiki_page
+      _description: "Get details of a specific wiki page"
+    create:
+      _tool: create_wiki_page
+      _description: "Create a new wiki page in a project"
+    update:
+      _tool: update_wiki_page
+      _description: "Update an existing wiki page"
+    delete:
+      _tool: delete_wiki_page
+      _description: "Delete a wiki page from a project"
+    group:
+      _description: "Group wiki operations"
+      list:
+        _tool: list_group_wiki_pages
+        _description: "List wiki pages in a group"
+      get:
+        _tool: get_group_wiki_page
+        _description: "Get details of a specific group wiki page"
+      create:
+        _tool: create_group_wiki_page
+        _description: "Create a new wiki page in a group"
+      update:
+        _tool: update_group_wiki_page
+        _description: "Update an existing group wiki page"
+      delete:
+        _tool: delete_group_wiki_page
+        _description: "Delete a wiki page from a group"
+  commit:
+    _description: "Commit operations"
+    list:
+      _tool: list_commits
+      _description: "List repository commits"
+    get:
+      _tool: get_commit
+      _description: "Get details of a specific commit"
+    diff:
+      _tool: get_commit_diff
+      _description: "Get changes/diffs of a specific commit"
+  release:
+    _description: "Release operations"
+    list:
+      _tool: list_releases
+      _description: "List all releases for a project"
+    get:
+      _tool: get_release
+      _description: "Get a release by tag name"
+    create:
+      _tool: create_release
+      _description: "Create a new release"
+    update:
+      _tool: update_release
+      _description: "Update an existing release"
+    delete:
+      _tool: delete_release
+      _description: "Delete a release from a project"
+    evidence:
+      _tool: create_release_evidence
+      _description: "Create release evidence for an existing release"
+    asset-download:
+      _tool: download_release_asset
+      _description: "Download a release asset file"
+  namespace:
+    _description: "Namespace operations"
+    list:
+      _tool: list_namespaces
+      _description: "List all namespaces available to the current user"
+    get:
+      _tool: get_namespace
+      _description: "Get details of a namespace by ID or path"
+    verify:
+      _tool: verify_namespace
+      _description: "Verify if a namespace path exists"
+  group:
+    _description: "Group operations"
+    projects:
+      _tool: list_group_projects
+      _description: "List projects in a group"
+    iterations:
+      _tool: list_group_iterations
+      _description: "List group iterations"
+  user:
+    _description: "User operations"
+    get:
+      _tool: get_users
+      _description: "Get GitLab user details by usernames"
+  event:
+    _description: "Event operations"
+    list:
+      _tool: list_events
+      _description: "List all events for the currently authenticated user"
+    project-list:
+      _tool: get_project_events
+      _description: "List all visible events for a specified project"
+  misc:
+    _description: "Miscellaneous operations"
+    note:
+      _tool: create_note
+      _description: "Create a new note on an issue or merge request"
+    upload-markdown:
+      _tool: upload_markdown
+      _description: "Upload a file to a project for use in markdown content"
+    download-attachment:
+      _tool: download_attachment
+      _description: "Download an uploaded file from a project"
