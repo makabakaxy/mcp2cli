@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "updated_at": "2026-04-05T08:04:26.100204+00:00",
+  "presets": [
+    {
+      "server": "dayuanjiang-next-ai-draw-io",
+      "latest": "0.1.2",
+      "versions": [
+        "0.1.2"
+      ],
+      "description": "",
+      "updated_at": "2026-04-05T07:56:47.069402+00:00",
+      "tool_count": 5
+    },
+    {
+      "server": "mcp-atlassian",
+      "latest": "2.14.6",
+      "versions": [
+        "2.14.6"
+      ],
+      "description": "",
+      "updated_at": "2026-04-05T06:27:34.288105+00:00",
+      "tool_count": 72
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 name: "dayuanjiang/next-ai-draw-io"
 description: Create, edit, and export draw.io diagrams via CLI with real-time browser preview. Use when user needs to create or modify diagrams, edit diagram elements, or export diagrams to PNG/SVG/drawio files.
 source_version: "0.1.2"
-source_cli_hash: "61402301"
+source_cli_hash: "8bc1729d"
 generated_at: "2026-04-05T07:02:59.842676+00:00"
 ---
 

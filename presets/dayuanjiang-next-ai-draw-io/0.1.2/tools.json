@@ -1,7 +1,7 @@
 {
   "server": "dayuanjiang/next-ai-draw-io",
   "version": "0.1.2",
-  "scanned_at": "2026-04-05T07:02:01.207292+00:00",
+  "scanned_at": "2026-04-05T07:50:20.670809+00:00",
   "tools": [
     {
       "name": "start_session",
