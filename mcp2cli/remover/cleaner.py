@@ -7,6 +7,7 @@ from pathlib import Path
 
 import click
 
+from mcp2cli.utils import safe_filename
 from mcp2cli.utils.file_ops import parse_frontmatter
 
 
@@ -51,7 +52,7 @@ def safe_remove_skill_dir(skill_dir: Path, expected_server_name: str) -> bool:
         return True
 
     name = _parse_frontmatter_name(skill_md)
-    if name and name != expected_server_name:
+    if name and safe_filename(name) != safe_filename(expected_server_name):
         click.echo(
             f"  Warning: skipping {skill_dir} — SKILL.md name '{name}' != '{expected_server_name}'",
             err=True,

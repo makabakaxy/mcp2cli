@@ -78,7 +78,8 @@ class PresetIndex:
     presets: list[PresetEntry] = field(default_factory=list)
 
     def find(self, server_name: str) -> PresetEntry | None:
-        return next((p for p in self.presets if p.server == server_name), None)
+        normalized = server_name.replace("/", "-")
+        return next((p for p in self.presets if p.server == normalized), None)
 
     @classmethod
     def from_dict(cls, data: dict) -> PresetIndex:

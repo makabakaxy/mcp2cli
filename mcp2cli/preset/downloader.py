@@ -36,6 +36,7 @@ def pull_preset(
     Returns True on success.
     """
     raw_base = _raw_base()
+    safe_name = safe_filename(server_name)
 
     # Resolve version from index
     entry = find_preset(server_name)
@@ -56,14 +57,14 @@ def pull_preset(
         return True
 
     # Fetch manifest
-    manifest_url = f"{raw_base}/{server_name}/{resolved_version}/manifest.json"
+    manifest_url = f"{raw_base}/{safe_name}/{resolved_version}/manifest.json"
     manifest_data = _download_json(manifest_url)
     if manifest_data is None:
         click.echo(f"Error: could not download manifest for {server_name}@{resolved_version}.", err=True)
         return False
 
     manifest = Manifest.from_dict(manifest_data)
-    base_url = f"{raw_base}/{server_name}/{resolved_version}"
+    base_url = f"{raw_base}/{safe_name}/{resolved_version}"
 
     click.echo(f"Downloading preset for {server_name}...")
     click.echo(
