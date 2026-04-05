@@ -100,7 +100,7 @@ def push_preset(
     index_data = _build_updated_index(server_name, preset_version, tools_json, fetch_index)
 
     # 7. Confirm
-    version_dir = f"presets/{server_name}/{preset_version}"
+    version_dir = f"presets/{safe_filename(server_name)}/{preset_version}"
     click.echo(f"\nFiles ({len(file_pairs)} + manifest.json + index.json):")
     for rel, _ in file_pairs:
         click.echo(f"  {version_dir}/{rel}")
@@ -126,7 +126,7 @@ def push_preset(
     ))
 
     # 9. Push
-    branch = f"preset/{server_name}-{preset_version}"
+    branch = f"preset/{safe_filename(server_name)}-{preset_version}"
     commit_msg = f"preset: {server_name}@{preset_version} ({len(tools_json.tools)} tools)"
     click.echo("\nPushing to git...")
     ok = push_branch(

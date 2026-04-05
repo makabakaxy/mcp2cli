@@ -4,7 +4,7 @@
 
 > Also known as: **mcp2skill** · **mcp-to-cli** · **mcp-to-skill** · **mcpcli**
 
-Convert MCP servers into CLI commands and compact AI agent skills.
+Convert MCP servers into CLI commands and agent skills.
 
 ## Why
 

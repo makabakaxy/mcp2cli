@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-to-cli"
-version = "0.1.4"
+version = "1.0.0"
 description = "Convert MCP server tools into hierarchical CLI commands and agent Skills"
 readme = "README.md"
 license = "MIT"
