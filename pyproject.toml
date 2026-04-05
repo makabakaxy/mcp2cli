@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mcp2cli"
+name = "mcp2skill"
 version = "0.1.0"
 description = "Convert MCP server tools into hierarchical CLI commands and agent Skills"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [
-    { name = "mengxiangyu" },
+    { name = "oliver.mengxy@gmail.com" },
 ]
 keywords = [
     "mcp",
@@ -40,9 +40,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mengxiangyu/mcp2cli"
-Repository = "https://github.com/mengxiangyu/mcp2cli"
-Issues = "https://github.com/mengxiangyu/mcp2cli/issues"
+Homepage = "https://github.com/makabakaxy/mcp2skill"
+Repository = "https://github.com/makabakaxy/mcp2skill"
+Issues = "https://github.com/makabakaxy/mcp2skill/issues"
 
 [project.scripts]
 mcp2cli = "mcp2cli.main:cli"

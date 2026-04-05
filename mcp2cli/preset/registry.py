@@ -11,7 +11,7 @@ import yaml
 from mcp2cli.constants import CONFIG_YAML
 from mcp2cli.preset.models import PresetIndex
 
-DEFAULT_REPO = "https://github.com/mengxiangyu/mcp2cli"
+DEFAULT_REPO = "https://github.com/makabakaxy/mcp2cli"
 INDEX_TIMEOUT = 5
 
 
