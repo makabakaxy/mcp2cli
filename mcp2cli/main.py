@@ -822,6 +822,10 @@ def remove(
 
     plan = scan_removal_targets(server_name)
 
+    if plan.server_name != server_name:
+        click.echo(f"  '{server_name}' → '{plan.server_name}' (alias match)")
+        server_name = plan.server_name
+
     if plan.is_empty():
         click.echo(f"\nServer \"{server_name}\" not found.")
         click.echo("  Use `mcp2cli list` to see all configured servers.")

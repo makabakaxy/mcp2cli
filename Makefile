@@ -1,4 +1,8 @@
-.PHONY: build publish clean
+.PHONY: build publish clean gen-index
+
+# Regenerate presets/index.json from all preset manifests
+gen-index:
+	python -c "from mcp2cli.preset.exporter import rebuild_index; rebuild_index('presets')"
 
 # Build distribution packages
 build: clean

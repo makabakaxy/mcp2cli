@@ -244,10 +244,9 @@
     },
     {
       "server": "zereight-gitlab-mcp",
-      "latest": "2.0.36",
+      "latest": "2.0.35",
       "versions": [
-        "2.0.35",
-        "2.0.36"
+        "2.0.35"
       ],
       "description": "Manage GitLab repos, MRs, issues, pipelines, deployments, and releases via CLI. Use when user needs to create/search repos, review/merge MRs, manage issues, or run pipelines.",
       "updated_at": "2026-04-06T05:36:03.301032+00:00",

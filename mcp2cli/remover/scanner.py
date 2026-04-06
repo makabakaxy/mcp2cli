@@ -89,6 +89,31 @@ class RemovalPlan:
         return lines
 
 
+def _resolve_alias_from_local_cli(server_name: str) -> str | None:
+    """Check all local cli.yaml files for a server_aliases match.
+
+    Returns the canonical server name (safe-filename form, i.e. the yaml file stem)
+    if found, otherwise None.
+    """
+    import yaml as _yaml
+
+    from mcp2cli.constants import CLI_DIR
+
+    if not CLI_DIR.exists():
+        return None
+    for yaml_file in CLI_DIR.glob("*.yaml"):
+        try:
+            data = _yaml.safe_load(yaml_file.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                continue
+            aliases = data.get("server_aliases") or []
+            if server_name in aliases:
+                return yaml_file.stem
+        except Exception:
+            pass
+    return None
+
+
 def scan_removal_targets(server_name: str) -> RemovalPlan:
     """Scan all possible artifacts for a server and build a RemovalPlan."""
     plan = RemovalPlan(server_name=server_name)
@@ -151,5 +176,11 @@ def scan_removal_targets(server_name: str) -> RemovalPlan:
         yaml_data = load_servers_yaml()
         entry = yaml_data.get("servers", {}).get(plan.server_name, {})
         plan.package_info = detect_package_info(plan.server_name, entry)
+
+    # Alias fallback: if nothing found, check local cli.yaml server_aliases
+    if plan.is_empty():
+        canonical = _resolve_alias_from_local_cli(server_name)
+        if canonical is not None and canonical != server_name:
+            return scan_removal_targets(canonical)
 
     return plan
