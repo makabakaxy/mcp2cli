@@ -4795,5 +4795,38 @@
         "additionalProperties": false
       }
     }
-  ]
+  ],
+  "server_meta": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@zereight/mcp-gitlab"
+    ],
+    "env": {
+      "GITLAB_PERSONAL_ACCESS_TOKEN": {
+        "description": "GitLab personal access token",
+        "example": "",
+        "required": true,
+        "sensitive": true
+      },
+      "GITLAB_API_URL": {
+        "description": "GitLab API URL",
+        "example": "https://gitlab.com/api/v4",
+        "required": true,
+        "sensitive": false
+      },
+      "GITLAB_PROJECT_ID": {
+        "description": "Default GitLab project ID (optional)",
+        "example": "my-group/my-repo",
+        "required": false,
+        "sensitive": false
+      },
+      "GITLAB_READ_ONLY_MODE": {
+        "description": "Enable read-only mode",
+        "example": "false",
+        "required": false,
+        "sensitive": false
+      }
+    }
+  }
 }

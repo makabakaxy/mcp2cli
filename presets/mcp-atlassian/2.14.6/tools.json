@@ -1999,5 +1999,49 @@
         "type": "object"
       }
     }
-  ]
+  ],
+  "server_meta": {
+    "command": "uvx",
+    "args": [
+      "mcp-atlassian"
+    ],
+    "env": {
+      "JIRA_URL": {
+        "description": "Jira instance URL",
+        "example": "https://your-company.atlassian.net",
+        "required": true,
+        "sensitive": false
+      },
+      "JIRA_USERNAME": {
+        "description": "Jira account email",
+        "example": "your.email@company.com",
+        "required": true,
+        "sensitive": false
+      },
+      "JIRA_API_TOKEN": {
+        "description": "Jira API token",
+        "example": "",
+        "required": true,
+        "sensitive": true
+      },
+      "CONFLUENCE_URL": {
+        "description": "Confluence instance URL",
+        "example": "https://your-company.atlassian.net/wiki",
+        "required": false,
+        "sensitive": false
+      },
+      "CONFLUENCE_USERNAME": {
+        "description": "Confluence account email",
+        "example": "your.email@company.com",
+        "required": false,
+        "sensitive": false
+      },
+      "CONFLUENCE_API_TOKEN": {
+        "description": "Confluence API token",
+        "example": "",
+        "required": false,
+        "sensitive": true
+      }
+    }
+  }
 }
