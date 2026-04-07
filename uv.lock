@@ -301,7 +301,7 @@ wheels = [
 
 [[package]]
 name = "mcp2cli"
-version = "1.0.3"
+version = "1.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

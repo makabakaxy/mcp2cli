@@ -1,9 +1,8 @@
 <!-- Keywords: mcp2cli mcp2skill mcp-to-skill mcp-to-cli mcpcli mcp to skill mcp to cli mcp 2 cli mcp 2 skill -->
 
-# mcp2cli
-Convert MCP servers into CLI commands and SKILLs.
-
+# mcp2cli/mcp2skill
 > Also known as: **mcp2skill** · **mcp-to-cli** · **mcp-to-skill** · **mcpcli**
+Convert MCP servers into CLI and Agent SKILLs.
 
 ## Why
 
