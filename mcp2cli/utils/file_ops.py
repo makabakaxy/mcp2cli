@@ -78,7 +78,7 @@ def ensure_users_dir(skill_dir: Path) -> None:
     users_dir.mkdir(parents=True, exist_ok=True)
     (users_dir / ".gitkeep").touch()
 
-    users_skill = users_dir / "SKILL.md"
+    users_skill = users_dir / "skill.md"
     if not users_skill.exists():
         users_skill.write_text(
             "# User Notes\n\nAdd your custom workflows and tips here.\n"

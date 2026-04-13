@@ -65,6 +65,5 @@ Append `--help` to any command for full parameter list:
 
 ## User Notes
 
-> **MUST READ** [users/SKILL.md](users/SKILL.md) for custom workflows and tips.
-> See [users/workflows.md](users/workflows.md) for multi-step workflow examples.
-> Not overwritten by updates.
+> **MUST READ** [users/skill.md](users/skill.md) for custom workflows and tips.
+> **Config**: MCP server settings live in `~/.agents/mcp2cli/servers.yaml` - edit there to take effect.

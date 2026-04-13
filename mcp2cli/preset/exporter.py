@@ -184,7 +184,7 @@ def export_preset(
     )
     click.echo("  ✓ manifest.json")
 
-    # Create users/ directory with placeholder SKILL.md
+    # Create users/ directory with placeholder skill.md
     skills_dir = target_dir / "skills"
     if skills_dir.exists():
         ensure_users_dir(skills_dir)
